@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<!-- header scripts start -->
+		<script defer src="images/alpine.js"></script>
+		<script src="images/tailwind.js"></script>
+	<!-- header scrits end -->
+	<title>WiKONEK Captive Portal v.1</title>
+	<style>
+	@font-face {
+		font-family: 'Montserrat';
+		font-style: normal;
+		font-weight: 400;
+		font-display: swap;
+		src: url('images/Montserrat-Regular.ttf') format('woff2');
+	}
+	@font-face {
+		font-family: 'Montserrat';
+		font-style: normal;
+		font-weight: 600;
+		font-display: swap;
+		src: url('images/Montserrat-SemiBold.ttf') format('woff2');
+	}
+	@font-face {
+		font-family: 'Montserrat';
+		font-style: normal;
+		font-weight: 700;
+		font-display: swap;
+		src: url('images/Montserrat-Bold.ttf') format('woff2');
+	}
+	@font-face {
+		font-family: 'Open Sans';
+		font-style: normal;
+		font-weight: 400;
+		font-stretch: normal;
+		font-display: swap;
+		src: url('images/OpenSans-Regular.ttf') format('woff2');
+	}
+	@font-face {
+		font-family: 'Open Sans';
+		font-style: normal;
+		font-weight: 700;
+		font-stretch: normal;
+		font-display: swap;
+	  src: url('images/OpenSans-Bold.ttf') format('woff2');
+	}
+	.splash {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100vh;
+		background: #fff;
+		z-index: 200;
+		color: white;
+		text-align: center;
+		line-height: 90vh;
+	}
+	.splash.display-none {
+		opacity: 0;
+		z-index: -10;
+		transition: all 1s;
+	}
+	.splash .wrap {
+		height: 80%;
+		width: 280px;
+		margin: 0 auto;
+		padding: 0;
+	}
+	.splash img {
+		max-width: 100%;
+		max-height: 312px;
+		display: inline-block;
+		vertical-align: middle;
+	}
+	#loader {
+		background: #17A0DC;
+		height: 10px;
+		width: 100%;
+		animation: loadContent 2.5s linear;
+		margin-top: 80px;
+	}
+		@keyframes loadContent {
+			from {width: 0px;}
+			to {width: 100%;}
+		}
+	.fade-in {
+		height: 100%;
+		opacity: 1;
+		animation: fadeIn 0.3s linear;
+	}
+		@keyframes fadeIn {
+			to {opacity: 1;}
+		}
+	body {
+		margin: 0;
+		font-family: 'Montserrat', sans-serif;
+	}
+	a {
+		color: #FF7522 !important;
+	}
+	a:hover {
+		text-decoration: underline;
+	}
+	.site-container {
+		min-width: 360px;
+	}
+	.header {
+		margin: 5px 0;
+	}
+	.title {
+		font-family: 'Montserrat', sans-serif;
+	}
+	.content {
+		font-family: 'Open Sans', sans-serif;
+		width: 300px; 
+		margin: 0 auto;
+	}
+	.modal-wrapper {
+		position: absolute;
+		width: 100%;
+		height: 150vh;
+		background-color: #fff;
+		display: block;
+		z-index: 1000;
+	}
+	.modal {
+		height: 100vh;
+		max-width: 90%;
+		background-color: #fff;
+	}
+	#dashboard-page svg {
+		fill: #17A0DC;
+		margin: 0 auto;
+	}
+	
+	#dashboard-page-tindera svg {
+		fill: #FE7D00;
+		margin: 0 auto;
+	}
+	
+	.hide-on-small {
+		display: block;	
+	}
+	.show-on-small {
+		display: none;	
+	}
+	.form-element {
+		margin-bottom: 8px;
+	}
+	.vcenter {
+		height: 100%;
+		margin: 0 auto;
+	}
+	.vcenter .wrap {
+		margin: 0;
+		position: absolute;
+		top: 50%;
+		-ms-transform: translateY(-50%);
+		transform: translateY(-50%);	
+	}
+	input, textarea {
+		border: 1px solid #d8d8d8;
+		padding: 6px 10px 7px!important;
+		border-radius: 3px;
+		display: block;
+		width: 100%;
+		font-size: 13px !important;
+	}
+	input[type="submit"],
+	a.button {
+		background: #17A0DC;
+		color: #fff !important;
+		text-transform: uppercase;
+		font-weight: bold;
+		padding: 15px !important;
+		border-radius: 5px;
+		box-shadow: 0px 3px 0px #FF7522;
+		border: none;
+		font-size: 16px !important;
+		cursor: pointer;
+	}
+	a.button:hover {
+		text-decoration: none;	
+	}
+	input.disabled[type="submit"] {
+		opacity: 0.5;
+	}
+	.countdown {
+		font-weight: bold;
+		text-align: center;
+		display: block;
+		margin-bottom: 30px;
+		margin-top: 20px;
+		font-size: 30px;
+		border: 1px solid #d2d2d2;
+		padding: 9px 0 10px;
+		border-radius: 3px;
+	}
+	.timer {
+		box-shadow: 0px 3px 0px #FF7522;
+	}
+	.timer-element .label {
+		padding-top: 5px !important;
+	}
+	.timer .time {
+		background: #f2f2f2;
+		font-family: "Montserrat", sans-serif;
+		font-weight: bold;
+		font-size: 24px;
+		padding: 5px;
+		border-radius: 3px;
+	}
+	.nav button {
+		background: #eee;
+		padding: 20px;
+		text-align: center;
+		color: #17A0DC;
+		font-size: 14px;
+		border-radius: 3px;
+	}
+	.grid {
+		line-height: 1.35;
+	}
+	.product-offers {
+		border: 1px solid #d8d8d8;
+		border-radius: 3px;
+		margin: 10px 0;
+		padding: 10px 20px 10px 13px;
+		grid-template-columns: 65% 35% !important;
+	}
+	.product-offers span {
+		display: block;
+		font-family: "Montserrat", sans-serif !important;
+		font-size: 15px;
+	}
+	.product-offers span:first-child {
+		font-weight: bold;
+		font-size: 19px;
+	}
+	.product-offers button {
+		font-size: 14px;
+	}
+	.buynow {
+		background: #eee;
+		color: #17A0DC;
+		border-radius: 3px;
+		font-weight: bold;
+	}
+	#dashboard-page-tindera .buynow {
+		color: #FE7D00;
+	}
+	.close-btn {
+		padding: 12px;
+		border-radius: 50%;
+		cursor: pointer;
+	}
+	.coinbank {
+		background: rgb(255,158,33);
+		background: radial-gradient(circle, rgba(255,158,33,1) 0%, rgba(255,120,34,1) 100%);
+		border: 8px solid #fff;
+		border-radius: 50%;
+		width: 250px;
+		height: 250px;
+		-webkit-animation: glow 2s linear infinite; /* Safari */
+		animation: glow 2s linear infinite;
+		box-shadow: 0px 0px 13px #ccc;
+		transition: all 1s;
+		margin: 0 auto;
+	}
+	@keyframes glow {
+		0% { background: rgb(255,100,34);background: radial-gradient(circle, rgba(255,100,34,1) 0%, rgba(255,182,33,1) 100%); }
+		100% { background: rgb(255,158,33); background: radial-gradient(circle, rgba(255,158,33,1) 0%, rgba(255,120,34,1) 100%); }
+	}
+	.insertcoin {
+		background: #fff;
+		width: 160px;
+		height: 160px;
+		border-radius: 50%;
+		box-shadow: 0 0 5px #ffb621;
+		color: #17A0DC;
+		font-size: 14px;
+	}
+	.insertcoin span {
+		position: relative;
+		top: 23px;
+	}
+	.coinbank img {
+		position: absolute;
+		z-index: 10000;
+		top: 38px;
+		left: 62px;
+	}
+	.station-id {
+		max-width: 600px;
+		margin: 15px auto;
+		font-size: 14px;
+		font-weight: bold;
+		color: #999;
+		padding-left: 2px;
+		border-top: 1px dotted #d8d8d8;
+		padding-top: 5px;
+	}
+	.form-element span {
+		font-size: 13px;
+	}
+	label {
+		margin-bottom: 3px !important;
+		display: block;
+	}
+	.wklogo {
+		width: 185px;
+	}
+	.wklogotindera {
+		height:44px;
+		width: auto!important;
+	}
+	.start-browsing {
+		text-align: center;
+		max-width: 80%;
+		margin: 0 auto 50px;
+	}
+	@media only screen and (max-width: 500px) {
+		
+		.wklogo {
+			width: 60%;
+			margin: 0 auto 15px;
+		}
+		
+		.wallet-details.float-right {
+			width: 100%;
+		}
+		
+		.wallet-balance.float-left.text-right.pr-2 {
+			text-align: left;
+		}
+		
+		.hide-on-small {
+			display: none;	
+		}
+		.show-on-small {
+			display: block;	
+		}
+		
+	}
+	</style>
+</head>
+<body>
+<!-- SPLASH PAGE -->
+<div id="splash-page" class="splash p-4" x-data="ingress">
+	<div class="wrap"> <!-- div added to horizontally and vertically center the splash image to better fit different screen sizes -->
+		<img class="fade-in" :src="image" alt="splash"/>
+	</div>
+	<div id="loader" class="rounded-lg"></div>
+</div><!-- splash modal dialog -->
+<!-- SIGN UP PAGE -->
+<div class="site-container wrap p-4">
+	<div class="header">
+		<div class="logo w-48" style="margin: 0 auto 40px;"><img src="images/wklogo_full.png" /></div>		
+	</div><!-- header -->
+	<div class="content">
+		<div class="wrap">
+			<div class="title text-center font-bold text-[21px] mb-[30px]">Signup</div>
+			<div class="form">
+				<form class="signup">
+					<div class="fname form-element">
+						<label class="text-[13px]">Full Name</label>
+						<input required type="text" placeholder="e.g. Juan Dela Cruz">
+					</div>
+					<div class="mnumber form-element">
+						<label class="text-[13px]">Mobile Number</label>
+						<div class="relative">
+							<span class="absolute top-[7px] left-[8px]">+63 <span class="text-[#d8d8d8]">|</span></span>
+							<input required style="padding-left: 45px !important;" type="text" placeholder="e.g. 9159043186">
+						</div>
+					</div>
+					<div class="bday form-element">
+						<label class="text-[13px]">Birthday</label>
+						<input required type="date">
+					</div>
+					<div class="address form-element">
+						<label class="text-[13px]">Address</label>
+						<textarea required placeholder="e.g. Georgetown Main St., Rosario, La Union, Philippines 3500"></textarea>
+					</div>
+					<div class="pinnum form-element">
+						<label class="text-[13px]">Pin</label>
+						<div class="relative">
+							<input required type="text" placeholder="e.g. 123456" maxlength="6">
+						</div>
+					</div>
+					<div class="confpinnum form-element" style="margin-bottom: 30px;">
+						<label class="text-[13px]">Confirm Pin</label>
+						<div class="relative">
+							<input required type="text" placeholder="e.g. 123456" maxlength="6">
+						</div>
+					</div>
+					<div class="submit form-element">
+						<input class="disabled" type="submit" value="Register">
+					</div>
+				</form>
+			</div>
+			<!-- if successful -->
+			<div class="success-message text-center text-[#26580F] m-[15px]">
+				<p>You have successfully registered.</p>
+			</div>
+			<!-- if failed -->
+			<div class="error-message text-center text-[#FF0000] m-[15px]">
+				<p>All fields are required. Please check the fields and try again.</p>
+			</div>
+		</div>
+	</div><!-- content -->
+</div><!-- site-container -->
+<!-- DASHBOARD MODALS -->
+<div
+        class="modal-wrapper"
+        x-data="{ open: false }"
+        x-show="open"
+        x-on:open-profile-modal.window="open = true"
+        x-on:keyup.escape.window="open = false"
+>
+<div 
+		class="modal"
+        x-data="profile"
+        x-on:click.outside="open = false"
+        x-on:submit.prevent="api_profile"
+		style="margin: 30px auto;"
+>
+	<div class="header">
+		<div class="logo w-48" style="margin: 0 auto 40px;"><img src="images/wklogo_full.png" /></div>
+	</div><!-- header -->
+	<div x-on:click="open = false" class="close-btn absolute right-[20px] top-[30px] bg-[#eeeeee]"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></div>
+	<div class="content">
+		<div class="wrap">
+			<div class="title text-center font-bold text-[21px] mb-[30px]">Profile</div>
+			<div class="form">
+				<form class="signup">
+					<div class="fname form-element">
+						<label class="text-[13px]">Full Name</label>
+						<input required type="text" placeholder="e.g. Juan Dela Cruz">
+					</div>
+					<div class="mnumber form-element">
+						<label class="text-[13px]">Mobile Number</label>
+						<div class="relative">
+							<span class="absolute top-[7px] left-[8px]">+63 <span class="text-[#d8d8d8]">|</span></span>
+							<input required style="padding-left: 45px !important;" type="text" placeholder="e.g. 9159043186">
+						</div>
+					</div>
+					<div class="bday form-element">
+						<label class="text-[13px]">Birthday</label>
+						<input required type="date">
+					</div>
+					<div class="address form-element">
+						<label class="text-[13px]">Address</label>
+						<textarea required placeholder="e.g. Georgetown Main St., Rosario, La Union, Philippines 3500"></textarea>
+					</div>
+					<div class="submit form-element mt-[30px]">
+						<input class="disabled" type="submit" value="Update">
+					</div>
+				</form>
+			</div>
+			<!-- if successful -->
+			<div class="success-message text-center text-[#26580F] m-[15px]">
+				<p>You have successfully updated your profile.</p>
+			</div>
+			<!-- if failed -->
+			<div class="error-message text-center text-[#FF0000] m-[15px]">
+				<p>Update failed. Try again.</p>
+			</div>
+		</div>
+	</div><!-- content -->
+</div><!-- site-container -->
+<div class="clear-both"></div>
+</div><!-- profile modal dialog -->
+<div
+        class="modal-wrapper"
+        x-data="{ open: false }"
+        x-show="open"
+        x-on:open-redeem-modal.window="open = true"
+        x-on:keyup.escape.window="open = false"
+>
+<div
+        class="modal"
+        x-data="redeem"
+        x-on:click.outside="open = false"
+        x-on:submit.prevent="api_redeem"
+		style="margin: 30px auto;"
+>
+	<div class="header">
+		<div class="logo w-48" style="margin: 0 auto 40px;"><img src="images/wklogo_full.png" /></div>		
+	</div><!-- header -->
+	<div x-on:click="open = false" class="close-btn absolute right-[20px] top-[30px] bg-[#eeeeee]"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></div>
+	<div class="content">
+		<div class="wrap">
+			<div class="title text-center font-bold text-[21px] mb-[30px]">Redeem Voucher</div>
+			<div class="form">
+				<form class="signup">
+					<div class="fname form-element">
+						<label class="text-[13px]">Voucher Code</label>
+						<input required type="text" placeholder="e.g. VOUCHER1VCA31">
+					</div>
+					<div class="submit form-element mt-[30px]">
+						<input class="disabled" type="submit" value="Redeem">
+					</div>
+				</form>
+			</div>
+			<!-- if successful -->
+			<div class="success-message text-center text-[#26580F] m-[15px]">
+				<p>You have successfully redeemed a voucher.</p>
+			</div>
+			<!-- if failed -->
+			<div class="error-message text-center text-[#FF0000] m-[15px]">
+				<p>Voucher not valid. Try again.</p>
+			</div>
+		</div>
+	</div><!-- content -->
+</div><!-- site-container -->
+<div class="clear-both"></div>
+</div><!-- redeem modal dialog -->
+<div
+        class="modal-wrapper"
+        x-data="{ open: false }"
+        x-show="open"
+        x-on:open-purchase-modal.window="open = true"
+        x-on:keyup.escape.window="open = false"
+>
+<div
+        class="modal"
+        x-data="purchase"
+        x-on:click.outside="open = false"
+        x-on:submit.prevent="api_redeem"
+		style="margin: 30px auto;"
+>
+	<div class="header">
+		<div class="logo w-48" style="margin: 0 auto 40px;"><img src="images/wklogo_full.png" /></div>		
+	</div><!-- header -->
+	<div x-on:click="open = false" class="close-btn absolute right-[20px] top-[30px] bg-[#eeeeee]"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></div>
+	<div class="content">
+		<div class="wrap">
+			<div class="title text-center font-bold text-[21px] mb-[30px]">Purchase Credits</div>
+			<div class="form">
+				<form class="signup">
+					<div class="creditamt form-element">
+						<label class="text-[13px]">Amount (₱)</label>
+						<input required type="text" value="5.00">
+					</div>
+					<div class="timelimit form-element">
+						<label class="text-[13px]">Duration of Unli Data</label>
+						<input required type="text" value="1 Hour" disabled style="background: #f5f5f5;">
+					</div>
+					<div class="submit form-element mt-[30px]">
+						<input class="disabled" type="submit" value="Buy Now">
+					</div>
+				</form>
+			</div>
+			<!-- if successful -->
+			<div class="success-message text-center text-[#26580F] m-[15px]">
+				<p>You have successfully purchased credits.</p>
+			</div>
+			<!-- if failed -->
+			<div class="error-message text-center text-[#FF0000] m-[15px]">
+				<p>Purchase failed. Try again.</p>
+			</div>
+		</div>
+	</div><!-- content -->
+</div><!-- site-container -->
+<div class="clear-both"></div>
+</div><!-- purchase modal dialog -->
+<div
+        class="modal-wrapper"
+        x-data="{ open: false }"
+        x-show="open"
+        x-on:open-transfer-modal.window="open = true"
+        x-on:keyup.escape.window="open = false"
+>
+<div
+        class="modal"
+        x-data="transfer"
+        x-on:click.outside="open = false"
+        x-on:submit.prevent="api_transfer"
+		style="margin: 30px auto;"
+>
+	<div class="header">
+		<div class="logo w-48" style="margin: 0 auto 40px;"><img src="images/wklogo_full.png" /></div>		
+	</div><!-- header -->
+	<div x-on:click="open = false" class="close-btn absolute right-[20px] top-[30px] bg-[#eeeeee]"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></div>
+	<div class="content">
+		<div class="wrap">
+			<div class="title text-center font-bold text-[21px] mb-[30px]">Transfer Load</div>
+			<div class="form">
+				<form class="signup">
+					<div class="mnumber form-element">
+						<label class="text-[13px]">Mobile Number</label>
+						<div class="relative">
+							<span class="absolute top-[7px] left-[8px]">+63 <span class="text-[#d8d8d8]">|</span></span>
+							<input required style="padding-left: 45px !important;" type="text" placeholder="e.g. 9159043186">
+						</div>
+					</div>
+					<div class="bday form-element">
+						<label class="text-[13px]">Amount Credits</label>
+						<input required type="number" placeholder="e.g. 100">
+					</div>
+					<div class="submit form-element mt-[30px]">
+						<input class="disabled" type="submit" value="Transfer">
+					</div>
+				</form>
+			</div>
+			<!-- if successful -->
+			<div class="success-message text-center text-[#26580F] m-[15px]">
+				<p>You have successfully transferred load.</p>
+			</div>
+			<!-- if failed -->
+			<div class="error-message text-center text-[#FF0000] m-[15px]">
+				<p>Transfer failed. Try again.</p>
+			</div>
+		</div>
+	</div><!-- content -->
+</div><!-- site-container -->  
+<div class="clear-both"></div>      
+</div><!-- transfer modal dialog -->
+<div
+        class="modal-wrapper"
+        x-data="{ open: false }"
+        x-show="open"
+        x-on:open-count-modal.window="open = true"
+        x-on:keyup.escape.window="open = false"
+>
+<div
+        class="modal"
+        x-data="count"
+        x-on:click.outside="open = false"
+        x-on:submit.prevent="$store.wikonek.done()"
+		style="margin: 30px auto;"
+>
+	<div class="header">
+		<div class="logo w-48" style="margin: 0 auto 40px;"><img src="images/wklogo_full.png" /></div>		
+	</div><!-- header -->
+	<div x-on:click="open = false" class="close-btn absolute right-[20px] top-[30px] bg-[#eeeeee]"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></div>
+	<div class="content">
+		<div class="wrap">
+			<div class="title text-center font-bold text-[21px] mb-[30px]">Insert Coin</div>
+			<div class="time-insert-coin">
+				<span class="block text-center">Click on the "Insert Coins" button below. You have 30 seconds to insert coins.</span>
+				<span class="countdown">0:00</span>
+			</div>
+			<div class="form relative">
+				<div class="coinbank">
+					<div class="vcenter" style="width:160px;">						
+						<button class="wrap insertcoin"><img class="absolute top-[10px] left-[10px]" src="pointer.png" /><span>Tap to Insert Coin</span></button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div><!-- content -->
+</div><!-- site-container -->
+<div class="clear-both"></div>
+</div><!-- count modal dialog -->
+<div
+        class="modal-wrapper"
+        x-data="{ open: false }"
+        x-show="open"
+        x-on:open-landing-free-modal.window="open = true"
+        x-on:keyup.escape.window="open = false"
+>
+<div
+        class="modal"
+        x-data="landing-free"
+        x-on:click.outside="open = false"
+        x-on:submit.prevent="$store.wikonek.done()"
+		style="margin: 30px auto;"
+>
+	<div class="header">
+		<div class="logo w-48" style="margin: 0 auto 40px;"><img src="images/wklogo_full.png" /></div>		
+	</div><!-- header -->
+	<div x-on:click="open = false" class="close-btn absolute right-[20px] top-[30px] bg-[#eeeeee]"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></div>
+	<div class="content">
+		<div class="text-center" style="width: 300px;" x-data="ingress">
+			<div style="width: 300px;">
+				<div class="mb-[30px] text-[15px]">You are now connected to<span class="font-bold block">15 Minutes FREE WIFI</span></div>
+				<img :src="image" alt="splash"/>
+				<div class="notice">
+					<div class="text-[15px] mt-[30px]">For inquiries or concerns, please visit:</div>					
+					<div class="text-[15px] font-bold"><a href="https://wikonek.ph">https://wikonek.ph</a></div>
+				</div>
+				<div class="clear-both"></div>
+				<a href="https://wikonek.ph" class="button block mt-[30px]">Continue Browsing</a>
+			</div>
+		</div>		
+	</div><!-- content -->
+</div><!-- site-container -->
+<div class="clear-both"></div>
+</div><!-- landing page modal FREE browsing -->
+<div
+        class="modal-wrapper"
+        x-data="{ open: false }"
+        x-show="open"
+        x-on:open-landing-credits-modal.window="open = true"
+        x-on:keyup.escape.window="open = false"
+>
+<div
+        class="modal"
+        x-data="landing-credits"
+        x-on:click.outside="open = false"
+        x-on:submit.prevent="$store.wikonek.done()"
+		style="margin: 30px auto;"
+>
+	<div class="header">
+		<div class="logo w-48" style="margin: 0 auto 40px;"><img src="images/wklogo_full.png" /></div>		
+	</div><!-- header -->
+	<div x-on:click="open = false" class="close-btn absolute right-[20px] top-[30px] bg-[#eeeeee]"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></div>
+	<div class="content">
+		<div class="text-center" style="width: 300px;" x-data="ingress">
+			<div style="width: 300px;">
+				<div class="mb-[30px] text-[15px]">You are now connected with<span class="font-bold block">₱<span class="amt">20.00</span> Credits</span></div>
+				<img :src="image" alt="splash"/>
+				<div class="notice">
+					<div class="text-[15px] mt-[30px]">For inquiries or concerns, please visit:</div>					
+					<div class="text-[15px] font-bold"><a href="https://wikonek.ph">https://wikonek.ph</a></div>
+				</div>
+				<div class="clear-both"></div>
+				<a href="https://wikonek.ph" class="button block mt-[30px]">Continue Browsing</a>
+			</div>
+		</div>		
+	</div><!-- content -->
+</div><!-- site-container -->
+<div class="clear-both"></div>
+</div><!-- landing page modal browsing with CREDITS -->
+<!-- DASHBOARD TINDERA MODALS -->
+<div
+        class="modal-wrapper"
+        x-data="{ open: false }"
+        x-show="open"
+        x-on:open-tindera-profile-modal.window="open = true"
+        x-on:keyup.escape.window="open = false"
+>
+<div 
+		class="modal"
+        x-data="profile"
+        x-on:click.outside="open = false"
+        x-on:submit.prevent="api_profile"
+		style="margin: 30px auto;"
+>
+	<div class="header">
+		<div class="logo w-48" style="margin: 0 auto 40px;"><img src="images/wklogo_full_tindera2.png" /></div>
+	</div><!-- header -->
+	<div x-on:click="open = false" class="close-btn absolute right-[20px] top-[30px] bg-[#eeeeee]"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></div>
+	<div class="content">
+		<div class="wrap">
+			<div class="title text-center font-bold text-[21px] mb-[30px]">Profile</div>
+			<div class="form">
+				<form class="signup">
+					<div class="fname form-element">
+						<label class="text-[13px]">Full Name</label>
+						<input required type="text" placeholder="e.g. Juan Dela Cruz">
+					</div>
+					<div class="mnumber form-element">
+						<label class="text-[13px]">Mobile Number</label>
+						<div class="relative">
+							<span class="absolute top-[7px] left-[8px]">+63 <span class="text-[#d8d8d8]">|</span></span>
+							<input required style="padding-left: 45px !important;" type="text" placeholder="e.g. 9159043186">
+						</div>
+					</div>
+					<div class="bday form-element">
+						<label class="text-[13px]">Birthday</label>
+						<input required type="date">
+					</div>
+					<div class="address form-element">
+						<label class="text-[13px]">Address</label>
+						<textarea required placeholder="e.g. Georgetown Main St., Rosario, La Union, Philippines 3500"></textarea>
+					</div>
+					<div class="submit form-element mt-[30px]">
+						<input class="disabled" type="submit" value="Update">
+					</div>
+				</form>
+			</div>
+			<!-- if successful -->
+			<div class="success-message text-center text-[#26580F] m-[15px]">
+				<p>You have successfully updated your profile.</p>
+			</div>
+			<!-- if failed -->
+			<div class="error-message text-center text-[#FF0000] m-[15px]">
+				<p>Update failed. Try again.</p>
+			</div>
+		</div>
+	</div><!-- content -->
+</div><!-- site-container -->
+<div class="clear-both"></div>
+</div><!-- tindera-profile modal dialog -->
+<div
+        class="modal-wrapper"
+        x-data="{ open: false }"
+        x-show="open"
+        x-on:open-tindera-redeem-modal.window="open = true"
+        x-on:keyup.escape.window="open = false"
+>
+<div
+        class="modal"
+        x-data="redeem"
+        x-on:click.outside="open = false"
+        x-on:submit.prevent="api_redeem"
+		style="margin: 30px auto;"
+>
+	<div class="header">
+		<div class="logo w-48" style="margin: 0 auto 40px;"><img src="images/wklogo_full_tindera2.png" /></div>		
+	</div><!-- header -->
+	<div x-on:click="open = false" class="close-btn absolute right-[20px] top-[30px] bg-[#eeeeee]"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></div>
+	<div class="content">
+		<div class="wrap">
+			<div class="title text-center font-bold text-[21px] mb-[30px]">Redeem Voucher</div>
+			<div class="form">
+				<form class="signup">
+					<div class="fname form-element">
+						<label class="text-[13px]">Voucher Code</label>
+						<input required type="text" placeholder="e.g. VOUCHER1VCA31">
+					</div>
+					<div class="submit form-element mt-[30px]">
+						<input class="disabled" type="submit" value="Redeem">
+					</div>
+				</form>
+			</div>
+			<!-- if successful -->
+			<div class="success-message text-center text-[#26580F] m-[15px]">
+				<p>You have successfully redeemed a voucher.</p>
+			</div>
+			<!-- if failed -->
+			<div class="error-message text-center text-[#FF0000] m-[15px]">
+				<p>Voucher not valid. Try again.</p>
+			</div>
+		</div>
+	</div><!-- content -->
+</div><!-- site-container -->
+<div class="clear-both"></div>
+</div><!-- tindera-redeem modal dialog -->
+<div
+        class="modal-wrapper"
+        x-data="{ open: false }"
+        x-show="open"
+        x-on:open-tindera-purchase-modal.window="open = true"
+        x-on:keyup.escape.window="open = false"
+>
+<div
+        class="modal"
+        x-data="purchase"
+        x-on:click.outside="open = false"
+        x-on:submit.prevent="api_redeem"
+		style="margin: 30px auto;"
+>
+	<div class="header">
+		<div class="logo w-48" style="margin: 0 auto 40px;"><img src="images/wklogo_full_tindera2.png" /></div>		
+	</div><!-- header -->
+	<div x-on:click="open = false" class="close-btn absolute right-[20px] top-[30px] bg-[#eeeeee]"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></div>
+	<div class="content">
+		<div class="wrap">
+			<div class="title text-center font-bold text-[21px] mb-[30px]">Confirm Transfer</div>
+			<div class="form">
+				<form class="signup">
+					<div class="creditamt form-element">
+						<label class="text-[13px]">Confirm/change transfer amount (₱)</label>
+						<input required type="text" value="5.00">
+					</div>
+					<div class="timelimit form-element">
+						<label class="text-[13px]">Duration of Unli Data</label>
+						<input required type="text" value="1 Hour" disabled style="background: #f5f5f5;">
+					</div>
+					<div class="submit form-element mt-[30px]">
+						<input class="disabled" type="submit" value="Buy Now">
+					</div>
+				</form>
+			</div>
+			<!-- if successful -->
+			<div class="success-message text-center text-[#26580F] m-[15px]">
+				<p>You have successfully transferred credits.</p>
+			</div>
+			<!-- if failed -->
+			<div class="error-message text-center text-[#FF0000] m-[15px]">
+				<p>Transfer failed. Try again.</p>
+			</div>
+		</div>
+	</div><!-- content -->
+</div><!-- site-container -->
+<div class="clear-both"></div>
+</div><!-- tindera-purchase modal dialog -->
+<div
+        class="modal-wrapper"
+        x-data="{ open: false }"
+        x-show="open"
+        x-on:open-tindera-transfer-modal.window="open = true"
+        x-on:keyup.escape.window="open = false"
+>
+<div
+        class="modal"
+        x-data="transfer"
+        x-on:click.outside="open = false"
+        x-on:submit.prevent="api_transfer"
+		style="margin: 30px auto;"
+>
+	<div class="header">
+		<div class="logo w-48" style="margin: 0 auto 40px;"><img src="images/wklogo_full_tindera2.png" /></div>		
+	</div><!-- header -->
+	<div x-on:click="open = false" class="close-btn absolute right-[20px] top-[30px] bg-[#eeeeee]"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></div>
+	<div class="content">
+		<div class="wrap">
+			<div class="title text-center font-bold text-[21px] mb-[30px]">Transfer Load</div>
+			<div class="form">
+				<form class="signup">
+					<div class="mnumber form-element">
+						<label class="text-[13px]">Mobile Number</label>
+						<div class="relative">
+							<span class="absolute top-[7px] left-[8px]">+63 <span class="text-[#d8d8d8]">|</span></span>
+							<input required style="padding-left: 45px !important;" type="text" placeholder="e.g. 9159043186">
+						</div>
+					</div>
+					<div class="bday form-element">
+						<label class="text-[13px]">Amount Credits</label>
+						<input required type="number" placeholder="e.g. 100">
+					</div>
+					<div class="submit form-element mt-[30px]">
+						<input class="disabled" type="submit" value="Transfer">
+					</div>
+				</form>
+			</div>
+			<!-- if successful -->
+			<div class="success-message text-center text-[#26580F] m-[15px]">
+				<p>You have successfully transferred load.</p>
+			</div>
+			<!-- if failed -->
+			<div class="error-message text-center text-[#FF0000] m-[15px]">
+				<p>Transfer failed. Try again.</p>
+			</div>
+		</div>
+	</div><!-- content -->
+</div><!-- site-container -->  
+<div class="clear-both"></div>      
+</div><!-- tindera-transfer modal dialog -->
+<div
+        class="modal-wrapper"
+        x-data="{ open: false }"
+        x-show="open"
+        x-on:open-tindera-count-modal.window="open = true"
+        x-on:keyup.escape.window="open = false"
+>
+<div
+        class="modal"
+        x-data="count"
+        x-on:click.outside="open = false"
+        x-on:submit.prevent="$store.wikonek.done()"
+		style="margin: 30px auto;"
+>
+	<div class="header">
+		<div class="logo w-48" style="margin: 0 auto 40px;"><img src="images/wklogo_full_tindera2.png" /></div>		
+	</div><!-- header -->
+	<div x-on:click="open = false" class="close-btn absolute right-[20px] top-[30px] bg-[#eeeeee]"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></div>
+	<div class="content">
+		<div class="wrap">
+			<div class="title text-center font-bold text-[21px] mb-[30px]">Insert Coin</div>
+			<div class="time-insert-coin">
+				<span class="block text-center">Click on the "Insert Coins" button below. You have 30 seconds to insert coins.</span>
+				<span class="countdown">0:00</span>
+			</div>
+			<div class="form relative">
+				<div class="coinbank">
+					<div class="vcenter" style="width:160px;">						
+						<button class="wrap insertcoin"><img class="absolute top-[10px] left-[10px]" src="pointer.png" /><span>Tap to Insert Coin</span></button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div><!-- content -->
+</div><!-- site-container -->
+<div class="clear-both"></div>
+</div><!-- tindera-count modal dialog -->
+<div
+        class="modal-wrapper"
+        x-data="{ open: false }"
+        x-show="open"
+        x-on:open-tindera-landing-free-modal.window="open = true"
+        x-on:keyup.escape.window="open = false"
+>
+<div
+        class="modal"
+        x-data="landing-free"
+        x-on:click.outside="open = false"
+        x-on:submit.prevent="$store.wikonek.done()"
+		style="margin: 30px auto;"
+>
+	<div class="header">
+		<div class="logo w-48" style="margin: 0 auto 40px;"><img src="images/wklogo_full_tindera2.png" /></div>		
+	</div><!-- header -->
+	<div x-on:click="open = false" class="close-btn absolute right-[20px] top-[30px] bg-[#eeeeee]"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></div>
+	<div class="content">
+		<div class="text-center" style="width: 300px;" x-data="ingress">
+			<div style="width: 300px;">
+				<div class="mb-[30px] text-[15px]">You are now connected to<span class="font-bold block">15 Minutes FREE WIFI</span></div>
+				<img :src="image" alt="splash"/>
+				<div class="notice">
+					<div class="text-[15px] mt-[30px]">For inquiries or concerns, please visit:</div>					
+					<div class="text-[15px] font-bold"><a href="https://wikonek.ph">https://wikonek.ph</a></div>
+				</div>
+				<div class="clear-both"></div>
+				<a href="https://wikonek.ph" class="button block mt-[30px]">Continue Browsing</a>
+			</div>
+		</div>		
+	</div><!-- content -->
+</div><!-- site-container -->
+<div class="clear-both"></div>
+</div><!-- tindera-landing page modal FREE browsing -->
+<div
+        class="modal-wrapper"
+        x-data="{ open: false }"
+        x-show="open"
+        x-on:open-tindera-landing-credits-modal.window="open = true"
+        x-on:keyup.escape.window="open = false"
+>
+<div
+        class="modal"
+        x-data="landing-credits"
+        x-on:click.outside="open = false"
+        x-on:submit.prevent="$store.wikonek.done()"
+		style="margin: 30px auto;"
+>
+	<div class="header">
+		<div class="logo w-48" style="margin: 0 auto 40px;"><img src="images/wklogo_full_tindera2.png" /></div>		
+	</div><!-- header -->
+	<div x-on:click="open = false" class="close-btn absolute right-[20px] top-[30px] bg-[#eeeeee]"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></div>
+	<div class="content">
+		<div class="text-center" style="width: 300px;" x-data="ingress">
+			<div style="width: 300px;">
+				<div class="mb-[30px] text-[15px]">You are now connected with<span class="font-bold block">₱<span class="amt">20.00</span> Credits</span></div>
+				<img :src="image" alt="splash"/>
+				<div class="notice">
+					<div class="text-[15px] mt-[30px]">For inquiries or concerns, please visit:</div>					
+					<div class="text-[15px] font-bold"><a href="https://wikonek.ph">https://wikonek.ph</a></div>
+				</div>
+				<div class="clear-both"></div>
+				<a href="https://wikonek.ph" class="button block mt-[30px]">Continue Browsing</a>
+			</div>
+		</div>		
+	</div><!-- content -->
+</div><!-- site-container -->
+<div class="clear-both"></div>
+</div><!-- tindera-landing page modal browsing with CREDITS -->
+<!-- DASHBOARD PAGE -->
+<div id="dashboard-page" class="site-container wrap p-4">
+	<div class="header" style="max-width: 600px; margin: 5px auto;">
+		<div class="logo float-left"><img class="wklogo" src="images/wklogo_full.png" /></div>
+		<div class="wallet-details float-right">
+			<span x-data x-text="$store.wikonek.user.name"></span>
+			<span x-data x-text="$store.wikonek.user.mobile"></span>
+			<div class="wallet-balance float-left text-right pr-2">
+				<div class="text-[17px] font-bold">₱<span>0.00</span></div>
+				<div class="text-[12px]">Wallet Balance</div>
+			</div>
+			<div class="header-buttons float-right">
+				<button x-data x-on:click="$dispatch('open-topup-modal')" class="bg-[#eeeeee] p-2 rounded-full">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor">
+						<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
+					</svg>
+				</button>
+				<button x-data x-on:click="$dispatch('open-profile-modal')" class="bg-[#eeeeee] p-2 rounded-full">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor">
+						<path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+					</svg>
+				</button>
+			</div>
+		</div>
+    </div><!-- header -->
+	<div class="clear-both"></div>
+	<div class="station-id">Station ID: QC-0001</div>
+	<div class="content relative top-[20px]" style="width: 100%; max-width: 600px;">    
+		<div class="timer mb-[35px] bg-[#17A0DC] rounded grid grid-cols-4 gap-4 text-center p-4">
+			<div class="timer-element">
+				<div class="time">0</div>
+				<div class="label text-white font-semibold text-sm">Days</div>
+			</div>
+			<div class="timer-element">
+				<div class="time">0</div>
+				<div class="label text-white font-semibold text-sm">Hours</div>
+			</div>
+			<div class="timer-element">
+				<div class="time">0</div>
+				<div class="label text-white font-semibold text-sm">Mins</div>
+			</div>
+			<div class="timer-element">
+				<div class="time">0</div>
+				<div class="label text-white font-semibold text-sm">Secs</div>
+			</div>
+		</div>
+		<div class="text-[#FF0000] text-center mb-[35px]" style="font-weight: bold !important;">You already consumed your FREE internet</div>
+		<div class="text-[#26580F] text-center mb-[35px]"><a x-data x-on:click="$dispatch('open-landing-free-modal')" style="color: #26580F !important; font-weight: bold; cursor: pointer;">Claim FREE Internet</a></div>
+		<div class="nav clear-both grid grid-cols-3 gap-5 mb-[30px]">
+			<button x-data x-on:click="$dispatch('open-count-modal')">
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 20 20" fill="currentColor"><path d="M8.707 7.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l2-2a1 1 0 00-1.414-1.414L11 7.586V3a1 1 0 10-2 0v4.586l-.293-.293z" /><path d="M3 5a2 2 0 012-2h1a1 1 0 010 2H5v7h2l1 2h4l1-2h2V5h-1a1 1 0 110-2h1a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5z" /></svg>
+				<span>Insert Coin</span>
+			</button>
+			<button x-data x-on:click="$dispatch('open-redeem-modal')">
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 100 4v2a2 2 0 01-2 2H4a2 2 0 01-2-2v-2a2 2 0 100-4V6z" /></svg>
+				<span>Redeem Voucher</span>
+				</button>
+			<button x-data x-on:click="$dispatch('open-transfer-modal')">
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm2 10a1 1 0 10-2 0v3a1 1 0 102 0v-3zm2-3a1 1 0 011 1v5a1 1 0 11-2 0v-5a1 1 0 011-1zm4-1a1 1 0 10-2 0v7a1 1 0 102 0V8z" clip-rule="evenodd" /></svg>
+				<span>Transfer Load</span>
+				</button>
+		</div>
+		<div class="font-bold text-[18px] title mb-[15px]">Product Offer</div>
+		<div class="offers mb-[35px]">
+			<div class="product-offers grid grid-cols-2 gap-2">
+				<div class="item"><span>₱5</span><span>Unli Data for 1 Hour</span></div>
+				<button class="buynow" x-data x-on:click="$dispatch('open-purchase-modal')">Buy Now</button>
+			</div>
+			<div class="product-offers grid grid-cols-2 gap-2">
+				<div class="item"><span>₱10</span><span>Unli Data for 4 Hours</span></div>
+				<button class="buynow" x-data x-on:click="$dispatch('open-purchase-modal')">Buy Now</button>
+			</div>
+			<div class="product-offers grid grid-cols-2 gap-2">
+				<div class="item"><span>₱20</span><span>Unli Data for 1 Day</span></div>
+				<button class="buynow" x-data x-on:click="$dispatch('open-purchase-modal')">Buy Now</button>
+			</div>
+		</div>
+		<div class="start-browsing">
+			<a x-data x-on:click="$dispatch('open-landing-free-modal')" class="button block mt-[30px]">Start Browsing for FREE</a>
+			<a x-data x-on:click="$dispatch('open-landing-credits-modal')" class="button block mt-[30px]">Start Browsing with Credits</a>
+		</div>
+	</div><!-- content -->
+</div><!-- site-container -->
+<!-- DASHBOARD PAGE TINDERA -->
+<div id="dashboard-page-tindera" class="site-container wrap p-4">
+	<div class="header" style="max-width: 600px; margin: 5px auto;">
+		<div class="logo float-left"><img class="wklogotindera" src="images/wklogo_full_tindera2.png" /></div>
+		<div class="wallet-details float-right">
+			<span x-data x-text="$store.wikonek.user.name"></span>
+			<span x-data x-text="$store.wikonek.user.mobile"></span>
+			<div class="wallet-balance float-left text-right pr-2">
+				<div class="text-[17px] font-bold"><span>00:00:00:00</span></div>
+				<div class="text-[12px]">Remaining Time</div>
+			</div>
+			<div class="header-buttons float-right">
+				<button x-data x-on:click="$dispatch('open-topup-modal')" class="bg-[#eeeeee] p-2 rounded-full">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor">
+						<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
+					</svg>
+				</button>
+				<button x-data x-on:click="$dispatch('open-tindera-profile-modal')" class="bg-[#eeeeee] p-2 rounded-full">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor">
+						<path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+					</svg>
+				</button>
+			</div>
+		</div>
+    </div><!-- header -->
+	<div class="clear-both"></div>
+	<div class="station-id">Station ID: QC-0001</div>
+	<div class="content relative top-[20px]" style="width: 100%; max-width: 600px;">    
+		<div class="timer mb-[35px] bg-[#FE7D00] rounded grid grid-cols-1 gap-4 text-center p-4">
+			<div class="timer-element">
+				<div class="time">₱0</div>
+				<div class="label text-white font-semibold text-sm">Wallet Balance</div>
+			</div>
+		</div>
+		<div class="text-[#FF0000] text-center mb-[35px]" style="font-weight: bold !important;">Please add funds to your wallet balance soon.</div>
+		<div class="text-[#26580F] text-center mb-[35px]"><a x-data x-on:click="$dispatch('open-tindera-landing-free-modal')" style="color: #26580F !important; font-weight: bold; cursor: pointer;">Claim FREE Internet</a></div>
+		<div class="nav clear-both grid grid-cols-3 gap-5 mb-[30px]">
+			<button x-data x-on:click="$dispatch('open-tindera-count-modal')">
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 20 20" fill="currentColor"><path d="M8.707 7.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l2-2a1 1 0 00-1.414-1.414L11 7.586V3a1 1 0 10-2 0v4.586l-.293-.293z" /><path d="M3 5a2 2 0 012-2h1a1 1 0 010 2H5v7h2l1 2h4l1-2h2V5h-1a1 1 0 110-2h1a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5z" /></svg>
+				<span>Insert Coin</span>
+			</button>
+			<button x-data x-on:click="$dispatch('open-tindera-redeem-modal')">
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 100 4v2a2 2 0 01-2 2H4a2 2 0 01-2-2v-2a2 2 0 100-4V6z" /></svg>
+				<span>Redeem Voucher</span>
+				</button>
+			<button x-data x-on:click="$dispatch('open-tindera-transfer-modal')">
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm2 10a1 1 0 10-2 0v3a1 1 0 102 0v-3zm2-3a1 1 0 011 1v5a1 1 0 11-2 0v-5a1 1 0 011-1zm4-1a1 1 0 10-2 0v7a1 1 0 102 0V8z" clip-rule="evenodd" /></svg>
+				<span>Transfer Load</span>
+				</button>
+		</div>
+		<div class="font-bold text-[18px] title mb-[15px]">Recent Transactions</div>
+		<div class="offers mb-[35px]">
+			<div class="product-offers grid grid-cols-2 gap-2">
+				<div class="item"><span>₱5</span><span>09566937313</span>
+                    <span>Jack Sparrow</span></div>
+				<button class="buynow" x-data x-on:click="$dispatch('open-tindera-purchase-modal')">Transfer Again</button>
+			</div>
+			<div class="product-offers grid grid-cols-2 gap-2">
+				<div class="item"><span>₱10</span><span>09566258323</span>
+                    <span>Mon Astilla</span></div>
+				<button class="buynow" x-data x-on:click="$dispatch('open-tindera-purchase-modal')">Transfer Again</button>
+			</div>
+			<div class="product-offers grid grid-cols-2 gap-2">
+				<div class="item"><span>₱20</span><span>09155586699</span>
+                    <span>Lester Hurtado</span></div>
+				<button class="buynow" x-data x-on:click="$dispatch('open-tindera-purchase-modal')">Transfer Again</button>
+			</div>
+		</div>
+		<div class="start-browsing">
+			<a x-data x-on:click="$dispatch('open-tindera-landing-free-modal')" class="button block mt-[30px]" style="background: #FE7D00;box-shadow: 0px 3px 0px #17A0DC;">Start Browsing for FREE</a>
+			<a x-data x-on:click="$dispatch('open-tindera-landing-credits-modal')" class="button block mt-[30px]" style="background: #FE7D00;box-shadow: 0px 3px 0px #17A0DC;">Start Browsing with Credits</a>
+		</div>
+	</div><!-- content -->
+</div><!-- site-container -->
+<!-- footer scripts start -->
+	<script src="images/script.js"></script>  
+<!-- footer scripts end -->
+</body>
+</html>
