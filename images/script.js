@@ -251,6 +251,115 @@ document.addEventListener('alpine:init', () => {
             this.loading = false;
         },
     }))
+    Alpine.data('profile', () => ({
+        title: 'Update PIN',
+        caption: 'Go!!!',
+        fields: {
+            old_pin: {
+                value: null,
+                maxLength: Alpine.store('wikonek').config.pinSize,
+                rules: ["required", "regexPIN"],
+                validate(callback) {
+                    let {isValid, errorMsg} = callback(this);
+                    this.isValid = isValid;
+                    this.errorMsg = errorMsg;
+                },
+                isValid: null,
+                errorMsg: null
+            },
+            pin: {
+                value: null,
+                maxLength: Alpine.store('wikonek').config.pinSize,
+                rules: ["required", "regexPIN"],
+                validate(callback) {
+                    let {isValid, errorMsg} = callback(this);
+                    this.isValid = isValid;
+                    this.errorMsg = errorMsg;
+                },
+                isValid: null,
+                errorMsg: null
+            },
+            pin_confirmation: {
+                value: null,
+                maxLength: Alpine.store('wikonek').config.pinSize,
+                rules: ['required', 'regexPIN', 'matchPIN'],
+                validate(callback) {
+                    let {isValid, errorMsg} = callback(this);
+                    this.isValid = isValid;
+                    this.errorMsg = errorMsg;
+                },
+                isValid: null,
+                errorMsg: null
+            },
+        },
+        updateProfileSucceeded: false,
+        updateProfileFailed: false,
+        init() {
+            console.log(`# data->profile->init()`);
+            Iodine.addRule(
+                "matchPIN",
+                (value) => value === this.fields.pin.value
+            );
+            Iodine.messages.matchPIN = "PIN confirmation needs to match PIN";
+        },
+        get name() {
+            return Alpine.store('wikonek').user.name;
+        },
+        get number() {
+            const mobile = Alpine.store('wikonek').user.mobile;
+            return mobile.substr(3);
+        },
+        canUpdate() {
+            return this.fields.old_pin.isValid && this.fields.pin.isValid && this.fields.pin_confirmation.isValid;
+        },
+        clear() {
+            console.log('clearing profile');
+            this.fields.old_pin.value = '';
+            this.fields.old_pin.errorMsg = '';
+            this.fields.pin.value = '';
+            this.fields.pin.errorMsg = '';
+            this.fields.pin_confirmation.value = '';
+            this.fields.pin_confirmation.errorMsg = '';
+            this.updateProfileSucceeded = null;
+            this.updateProfileFailed = null;
+        },
+        async api_password() {
+            console.log(`# data->profile->api_password()`);
+            const url = apiEndPoint+`/password/${this.fields.old_pin.value}/${this.fields.pin.value}`;
+            console.log(`# - fetching ${url}`);
+            await fetch(url, {
+                method: 'POST',
+                headers: {"Authorization": "Bearer "+ Alpine.store('wikonek').token}
+            })
+                .then(response =>  response.json().then(data => ({status: response.status, body: data, isOk: response.ok})))
+                .then(obj => {
+                    if (obj.isOk === true) {
+                        console.log(`# - successful`);
+                        console.log(`# - hydrating user`);
+                        this.updateProfileSucceeded = true;
+                    }
+                    else if (obj.status === 401) {
+                        console.log(`# - displaying error message`);
+                        this.fields.old_pin.isValid = false;
+                        this.fields.old_pin.errorMsg = 'Wrong PIN';
+                        this.updateProfileFailed = true;
+                    }
+                })
+                .catch((error) => {
+                    console.log('# - error');
+                })
+                .finally(() => {
+                    console.log('# - finally');
+                    setTimeout(() => this.clear(), Alpine.store('wikonek').config.flash.timeout);
+                })
+            ;
+        },
+        submit() {
+            if (this.canUpdate) {
+                this.api_password();
+            }
+        },
+    }))
     Alpine.data('redeem', () => ({
         fields: {
             voucher: {
@@ -563,8 +672,24 @@ document.addEventListener('alpine:init', () => {
                 day_pass_today: null,
                 device: {
                     user: {
-                        mobile: ''
-                    }
+                        mobile: '',
+                        get prefix() {
+                            return '+63'
+                        },
+                        set number(value) {
+                            this.mobile = this.prefix + value;
+                        },
+                        get number() {
+                            return this.mobile.substr(3)
+                        },
+                        name: '',
+                        birthdate: '1971-03-05',
+                        address: '',
+                        get displayName() {
+                            return this.name + ' (' + this.mobile + ')'
+                        },
+                        email: ''
+                    },
                 }
             },
             station: {
