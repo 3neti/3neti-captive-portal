@@ -149,6 +149,7 @@ document.addEventListener('alpine:init', () => {
                 .then(response =>  response.json().then(data => ({status: response.status, body: data, isOk: response.ok})))
                 .then(obj => {
                     if (obj.isOk === true) {
+                        console.log(`# - successful`);
                         Alpine.store('wikonek').user = obj.body.data.user;
                         console.log(`# - hydrating user`);
                         console.log(Alpine.store('wikonek').user, 'user');
@@ -188,18 +189,18 @@ document.addEventListener('alpine:init', () => {
                 .then(response =>  response.text().then(data => ({status: response.status, body: data, isOk: response.ok})))
                 .then(obj => {
                     if (obj.isOk === true) {
-                        console.log(`# - login successful`);
+                        console.log(`# - successful`);
                         this.token = obj.body;
                         console.log(this.token, 'token');
                         this.$dispatch('notify', { content: `Login successful!`, type: 'success'});
                     }
                     else {
-                        console.log(`# - displaying error message`);
+                        console.log(`# - failure`);
                         this.$dispatch('notify', { content: `Login failed!`, type: 'error'});
                     }
                 })
                 .catch((error) => {
-                    console.log('# - catching error');
+                    console.log('# - error');
                 })
                 .finally(() => {
                     console.log('# - finally');
@@ -250,14 +251,130 @@ document.addEventListener('alpine:init', () => {
             this.loading = false;
         },
     }))
+    Alpine.data('redeem', () => ({
+        fields: {
+            voucher: {
+                value: null,
+                rules: ['required', 'regexVoucher'],
+                validate(callback) {
+                    let {isValid, errorMsg} = callback(this);
+                    this.isValid = isValid;
+                    this.errorMsg = errorMsg;
+                },
+                isValid: null,
+                errorMsg: null
+            },
+        },
+        redemptionSucceeded: null,
+        redemptionFailed: null,
+        airtime: 0,
+        reset() {
+            console.log('resetting redemption');
+            this.fields.voucher.value = '';
+            this.fields.voucher.errorMsg = '';
+            this.redemptionSucceeded = null;
+            this.redemptionFailed = null;
+        },
+        get caption() {
+            return 'Go!!!';
+        },
+        get message() {
+            return `You have successfully redeemed a voucher with ${this.airtime} minutes of airtime!`
+        },
+        get canRedeem() {
+            return this.fields.voucher.isValid
+        },
+        async api_redeem() {
+            console.log(`# data->registration->api_redeem()`);
+            const voucher = this.fields.voucher.value;
+            const authorization = Alpine.store('wikonek').authorization;
+            const url = apiEndPoint+`/redeem/${voucher}`;
+            console.log(`# - fetching ${url}`);
+            console.log(`# - using voucher code ${voucher}`);
+            await fetch(url, {
+                method: 'POST',
+                headers: {"Authorization": "Bearer "+ Alpine.store('wikonek').token}
+            })
+                .then(response =>  response.json().then(data => ({status: response.status, body: data, isOk: response.ok})))
+                .then(obj => {
+                    if (obj.isOk === true) {
+                        console.log(`# - successful`);
+                        let redemption = obj.body.data;
+                        console.log(`# - redemption data`);
+                        console.log(redemption, 'redemption');
+                        this.airtime = redemption.airtime;
+                        console.log(`# - airtime`);
+                        console.log(this.airtime, 'this.airtime');
+                        // Alpine.store('wikonek').consumption = this.airtime;
+                        // console.log(`# - consume airtime`);
+                        // Alpine.store('wikonek').api_ui();
+                        // console.log(`# - set UI`);
+                        // console.log(`# - resetting the field and statuses`);
+                    }
+                    else if (obj.status === 404) {
+                        console.log(`# - voucher code is invalid`);
+                        this.fields.voucher.isValid = false;
+                        console.log(obj.body.message, `# - displaying error message`);
+                        this.fields.voucher.errorMsg = 'Voucher Code is not valid.';
+                    }
+                    else if (obj.status === 406) {
+                        console.log(`# - voucher code is used`);
+                        this.fields.voucher.isValid = false;
+                        console.log(obj.body.message, `# - displaying error message`);
+                        this.fields.voucher.errorMsg = 'Voucher Code is already used.';
+                    }
+                    else {
+                        console.log(`# - general exception`);
+                        this.fields.voucher.isValid = false;
+                        console.log(`# - displaying error message`);
+                        this.fields.voucher.errorMsg = 'Unknown error.';
+                    }
+                    this.redemptionSucceeded = obj.isOk;
+                    this.redemptionFailed = !obj.isOk;
+                })
+                .catch((error) => {
+                    console.log('# - error');
+                })
+                .finally(() => {
+                    console.log('# - finally');
+                    setTimeout(() => this.reset(), Alpine.store('wikonek').config.flash.timeout);
+                })
+            ;
+        },
+        submit() {
+            if (this.canRedeem) {
+                this.api_redeem();
+            }
+        }
+    }))
+    Alpine.data('dashboard', (mode) => ({
+        redeem() {
+            this.$dispatch('open-redeem-modal');
+        },
+    }))
     Alpine.store('wikonek', {
         config: {
             pinSize: 4,
             // macAddress: '10:6d:b6:6c:d5:37'
-            macAddress: '20:6d:b6:6c:d5:37'
+            macAddress: '20:6d:b6:6c:d5:37',
+            stationID: '803F5D9D9419',
+            flash: {
+                timeout: 10 * 1000,
+            }
         },
         data: {
-            touch: null,
+            touch: {
+                device: {
+                    user: {
+                        mobile: ''
+                    }
+                }
+            },
+            station: {
+                user: {
+                    mobile: ''
+                }
+            },
         },
         get token() {
             return this.data.touch.token;
@@ -274,11 +391,32 @@ document.addEventListener('alpine:init', () => {
         get registered() {
             return this.data.touch && this.device && this.user && this.user.mobile;
         },
+        get station() {
+            return this.data.station;
+        },
+        get manager() {
+            return this.station.user;
+        },
+        get tinderaMode() {
+            let retval = false;
+            if (typeof this.manager === 'object' && this.manager !== null) {
+                if (typeof this.user === 'object' && this.user !== null) {
+                    if (this.manager.id == this.user.id) {
+                        retval = true;
+                    }
+                }
+            }
+
+            return retval;
+        },
+        get userMode() {
+            return !this.tinderaMode;
+        },
         init() {
             console.log('* store->wikonek->init()');
             this.registered = false;
             this.loadCustomValidations();
-            this.api_touch();
+            this.api_touch().then(() => this.api_station());
         },
         loadCustomValidations() {
             console.log('** store->wikonek->loadCustomValidations()');
@@ -335,18 +473,52 @@ document.addEventListener('alpine:init', () => {
                         console.log(this.data.touch, 'touch');
                     }
                     else {
-                        console.log('* - failed');
+                        console.log('* - failure');
                     }
                 })
                 // .then(response => response.json())
                 // .then(data => {
                 //     this.data.setTouch(data.data);
                 // })
-                // .finally(() => {
-                //     // this.registered = this.hasCompletedProfile;
-                // })
+                .catch((error) => {
+                    console.log('# - error');
+                })
+                .finally(() => {
+                    console.log('# - finally');
+                    // this.registered = this.hasCompletedProfile;
+                })
         },
-    })// TODO: update user in new device
+        async api_station() {
+            console.log('* store->wikonek->api_station()');
+            const station = this.config.stationID;
+            const url = apiEndPoint+`/stations/${station}`;
+            console.log(`** api_station() -> ${url}`)
+            await fetch(url, {
+                method: 'GET',
+                headers: {"Authorization": "Bearer "+ Alpine.store('wikonek').token}
+            })
+                .then(response =>  response.json().then(data => ({status: response.status, body: data, isOk: response.ok})))
+                .then(obj => {
+                    if (obj.isOk === true) {
+                        console.log(`# - successful`);
+                        this.data.station = obj.body.data;
+                        console.log('* - station');
+                        console.log(this.station, 'station');
+                        console.log('* - manager');
+                        console.log(this.manager, 'manager');
+                    }
+                    else {
+                        console.log(`# - failure`);
+                    }
+                })
+                .catch((error) => {
+                    console.log('# - error');
+                })
+                .finally(() => {
+                    console.log('# - finally');
+                })
+        },
+    })
 })
 
 function validationCallback(field) {
