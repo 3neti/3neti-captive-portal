@@ -1088,6 +1088,87 @@
     </div><!-- site-container -->
     <div class="clear-both"></div>
 </div><!-- transfer modal dialog -->
+<div
+        class="modal-wrapper"
+        x-data="egress('checkin')"
+        x-on:keyup.escape.window="open = false"
+        x-on:open-landing-free-modal.window="open = true"
+        x-show="open"
+>
+    <div
+            class="modal"
+            style="margin: 30px auto;"
+            x-on:click.outside="open = false"
+    >
+        <div class="header">
+            <div class="logo w-48" style="margin: 0 auto 40px;"><img src="images/wklogo_full.png"/></div>
+        </div><!-- header -->
+        <div class="close-btn absolute right-[20px] top-[30px] bg-[#eeeeee]" x-on:click="open = false">
+            <svg class="h-7 w-7" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path clip-rule="evenodd"
+                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                      fill-rule="evenodd"/>
+            </svg>
+        </div>
+        <div class="content">
+            <div class="text-center" style="width: 300px">
+                <div style="width: 300px;">
+                    <div class="mb-[30px] text-[15px]"><span x-text="payload"> </span> <span class="font-bold block" x-text="message"></span>
+                    </div>
+                    <img :src="image" alt="lgu"/>
+                    <div class="notice">
+                        <div class="text-[15px] mt-[30px]">For inquiries or concerns, please visit:</div>
+                        <div class="text-[15px] font-bold"><a href="https://wikonek.ph">wikonek.ph</a></div>
+                    </div>
+                    <div class="clear-both"></div>
+                    <a class="button block mt-[30px]" :href="landing" x-text="caption"></a>
+                </div>
+            </div>
+        </div><!-- content -->
+    </div><!-- site-container -->
+    <div class="clear-both"></div>
+</div><!-- landing page modal CHECKIN -->
+<div
+        class="modal-wrapper"
+        x-data="egress('purchase')"
+        x-on:keyup.escape.window="open = false"
+        x-on:open-landing-purchase-modal.window="open = true"
+        x-show="open"
+>
+    <div
+            class="modal"
+            style="margin: 30px auto;"
+            x-on:click.outside="open = false"
+            x-on:submit.prevent
+    >
+        <div class="header">
+            <div class="logo w-48" style="margin: 0 auto 40px;"><img src="images/wklogo_full.png"/></div>
+        </div><!-- header -->
+        <div class="close-btn absolute right-[20px] top-[30px] bg-[#eeeeee]" x-on:click="open = false">
+            <svg class="h-7 w-7" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path clip-rule="evenodd"
+                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                      fill-rule="evenodd"/>
+            </svg>
+        </div>
+        <div class="content">
+            <div class="text-center" style="width: 300px;">
+                <div style="width: 300px;">
+                    <div class="mb-[30px] text-[15px]">You are now connected with<span class="font-bold block">₱<span
+                            class="amt" x-text="message"></span> Credits</span></div>
+                    <img :src="image" alt="splash"/>
+                    <div class="notice">
+                        <div class="text-[15px] mt-[30px]">For inquiries or concerns, please visit:</div>
+                        <div class="text-[15px] font-bold"><a href="https://wikonek.ph">https://wikonek.ph</a></div>
+                    </div>
+                    <div class="clear-both"></div>
+                    <a class="button block mt-[30px]" :href="landing" x-text="caption"></a>
+                </div>
+            </div>
+        </div><!-- content -->
+    </div><!-- site-container -->
+    <div class="clear-both"></div>
+</div><!-- landing page modal PURCHASE -->
 <!-- DASHBOARD TINDERA MODALS -->
 
 <!-- DASHBOARD PAGE -->
@@ -1138,12 +1219,13 @@
                     <div class="label text-white font-semibold text-sm">Secs</div>
                 </div>
             </div>
-            <div class="text-[#FF0000] text-center mb-[35px]" style="font-weight: bold !important;"
-                 x-text="captions.claimed">
+            <div x-data="checkin">
+                <div class="text-[#FF0000] text-center mb-[35px]" style="font-weight: bold !important;" x-text="captions.claimed" x-show="claimed"></div>
+                <div class="text-[#26580F] text-center mb-[35px]" x-show="unclaimed">
+                    <a style="color: #26580F !important; font-weight: bold; cursor: pointer;" x-on:click="submit" x-text="captions.claim"></a>
+                </div>
             </div>
-            <div class="text-[#26580F] text-center mb-[35px]"><a
-                    style="color: #26580F !important; font-weight: bold; cursor: pointer;" x-data
-                    x-on:click="$dispatch('open-landing-free-modal')" x-text="captions.claim"></a></div>
+
             <div class="nav clear-both grid grid-cols-3 gap-5 mb-[30px]">
                 <button x-data x-on:click="$dispatch('open-count-modal')">
                     <svg class="h-8 w-8" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">

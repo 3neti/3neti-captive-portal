@@ -2,8 +2,8 @@ const backendIPAddress = `206.189.90.222`;
 const apiEndPoint = `http://${backendIPAddress}/api`;
 const gatewayURL = `http://$gwaddress:$gwport/`;
 const splashURL = `http://${backendIPAddress}/splash`; // image of franchisee
-const lguURL = `http://206.189.90.222/lgu`; // image of government sponsor
-const landingURL = `http://206.189.90.222/landing`;
+const lguURL = `http://${backendIPAddress}/lgu`; // image of government sponsor
+const landingURL = `http://${backendIPAddress}/landing`;
 
 document.addEventListener('alpine:init', () => {
     Alpine.data('ingress', () => ({
@@ -640,6 +640,110 @@ document.addEventListener('alpine:init', () => {
             this.$dispatch('open-landing-purchase-modal');
         },
     }))
+    Alpine.data('checkin', () => ({
+        get claimed() {
+            return Alpine.store('wikonek').dayPassClaimed
+        },
+        get unclaimed() {
+            return ! this.claimed;
+        },
+        get freeMinutes() {
+            return Alpine.store('wikonek').dayPass;
+        },
+        async api_checkin() {
+            console.log(`# data->checkin->api_checkin()`);
+            const device = Alpine.store('wikonek').data.touch.device.identifier;
+            const station = Alpine.store('wikonek').station.identifier;
+            const url = apiEndPoint+`/checkin/${device}/${station}`;
+            const authorization = Alpine.store('wikonek').authorization;
+            console.log(`** api_checkin() -> ${url}`);
+            await fetch(url, {
+                method: 'POST',
+                headers: {"Authorization": "Bearer "+ Alpine.store('wikonek').token}
+            })
+                .then(response =>  response.json().then(data => ({status: response.status, body: data, isOk: response.ok})))
+                .then(obj => {
+                    if (obj.isOk === true) {
+                        console.log(`# - successful`);
+                        Alpine.store('wikonek').data.checkin = obj.body.data;
+                        console.log(Alpine.store('wikonek').data.checkin, 'checkin');
+                    }
+                    else {
+                        console.log(`# - displaying error message`);
+                    }
+                })
+                .catch((error) => {
+                    console.log('# - error');
+                })
+                .finally(() => {
+                    console.log('# - finally');
+                })
+                // .then(response => response.json())
+                // .then(data => {
+                //     Alpine.store('wikonek').data.setCheckin(data.data)
+                // })
+                // .then(() => {
+                //     Alpine.store('wikonek').consumption = Alpine.store('wikonek').dayPass
+                // })
+        },
+        submit() {
+            console.log(`# data->checkin->submit()`);
+            this.api_checkin();
+            this.$dispatch('open-landing-free-modal');
+        }
+    }))
+    Alpine.data('egress', (operation) => ({
+        open: false,
+        get image() {
+            switch (operation) {
+                default:
+                    return lguURL;
+            }
+        },
+        get payload() {
+            switch (operation) {
+                case 'checkin' :
+                    return Alpine.store('wikonek').dayPass + ' minutes';
+                case 'purchase':
+                    return parseProductRate(Alpine.store('wikonek').data.purchase.product.rate);
+                case 'count' :
+                    return '₱ ' + Alpine.store('wikonek').counted + ' is equivalent to ';
+            }
+        },
+        get message() {
+            switch (operation) {
+                case 'checkin':
+                    return Alpine.store('wikonek').data.checkin.splash;
+                case 'purchase':
+                    return parseProductRate(Alpine.store('wikonek').data.purchase.product.rate);
+                case 'count':
+                    let airtime = null;
+                    switch (Alpine.store('wikonek').counted) {
+                        case '1': airtime = 10; break;
+                        case '2': airtime = 20; break;
+                        case '3': airtime = 30; break;
+                        case '4': airtime = 40; break;
+                        case '5': airtime = 60; break;
+                        default: airtime = 0;
+                    }
+                    return airtime + ' minutes';
+                default:
+                    return 'The world is your oyster!';
+            }
+        },
+        get landing() {
+            switch (operation) {
+                default:
+                    return Alpine.store('wikonek').url_landing
+            }
+        },
+        get caption() {
+            switch (operation) {
+                default:
+                    return 'Go!!!';
+            }
+        }
+    }))
     Alpine.data('dashboard', (mode) => ({
         captions: {
             balance: 'Wallet Balance',
@@ -719,6 +823,15 @@ document.addEventListener('alpine:init', () => {
                     }
                 ]
             },
+            checkin: {
+                splash: '',
+                airtime: 0,
+            },
+            purchase: {
+                product: {
+                    rate: 'P 0.00',
+                }
+            }
         },
         selectedProduct: {
             code: '1HIA',
@@ -763,6 +876,21 @@ document.addEventListener('alpine:init', () => {
         },
         get wallet() {
             return this.data.ui.balance
+        },
+        get dayPassClaimed() {
+            let retval = false;
+            if (this.data.touch.day_pass_today != null) {
+                if (+this.data.touch.day_pass_today.availed > 0) {
+                    retval = true;
+                }
+            }
+            return retval;
+        },
+        get dayPass() {
+            return this.data.checkin.airtime
+        },
+        get url_landing() {
+            return landingURL;
         },
         init() {
             console.log('* store->wikonek->init()');
