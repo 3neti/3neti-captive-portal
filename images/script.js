@@ -128,6 +128,14 @@ document.addEventListener('alpine:init', () => {
             );
             Iodine.messages.matchingPIN = "Value must match Security PIN";
             console.log('# - matchingPIN loaded');
+            this.$watch('agreed', value => {
+                if (value) {
+                    this.$dispatch('notify', {
+                        content: 'You have agreed to the terms of the LyfLyn.Net Customer Service Agreement.',
+                        type: 'info'}
+                    );
+                }
+            });
         },
         async api_register() {
             console.log(`# data->registration->api_register()`);
@@ -144,12 +152,14 @@ document.addEventListener('alpine:init', () => {
                         Alpine.store('wikonek').user = obj.body.data.user;
                         console.log(`# - hydrating user`);
                         console.log(Alpine.store('wikonek').user, 'user');
+                        this.$dispatch('notify', { content: `Registration successful!`, type: 'success'});
                     }
                     else if (obj.status === 422) {
                         this.registered = false;
                         this.fields.mobile.isValid = false;
                         this.fields.mobile.errorMsg = 'Mobile number is already used.';
                         console.log(`# - displaying error message`);
+                        this.$dispatch('notify', { content: `Registration failed!`, type: 'error'});
                     }
                 })
                 .catch((error) => {
@@ -181,9 +191,11 @@ document.addEventListener('alpine:init', () => {
                         console.log(`# - login successful`);
                         this.token = obj.body;
                         console.log(this.token, 'token');
+                        this.$dispatch('notify', { content: `Login successful!`, type: 'success'});
                     }
                     else {
                         console.log(`# - displaying error message`);
+                        this.$dispatch('notify', { content: `Login failed!`, type: 'error'});
                     }
                 })
                 .catch((error) => {
