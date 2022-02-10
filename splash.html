@@ -436,6 +436,10 @@
 </div><!-- splash modal dialog -->
 <!-- NOTIFICATION PAGE -->
 <div
+        @notify.window="add($event)"
+        aria-live="polite"
+        class="fixed bottom-0 right-0 pr-4 pb-4 max-w-xs w-full flex flex-col space-y-4 sm:justify-start"
+        role="status"
         x-data="{
         notifications: [],
         add(e) {
@@ -449,14 +453,11 @@
             this.notifications = this.notifications.filter(i => i.id !== notification.id)
         },
     }"
-        @notify.window="add($event)"
-        class="fixed bottom-0 right-0 pr-4 pb-4 max-w-xs w-full flex flex-col space-y-4 sm:justify-start"
-        role="status"
-        aria-live="polite"
 >
     <!-- Notification -->
-    <template x-for="notification in notifications" :key="notification.id">
+    <template :key="notification.id" x-for="notification in notifications">
         <div
+                class="relative max-w-sm w-full bg-white pl-6 pr-4 py-4 border border-black pointer-events-auto"
                 x-data="{
                 show: false,
                 init() {
@@ -472,35 +473,39 @@
             }"
                 x-show="show"
                 x-transition.duration.500ms
-                class="relative max-w-sm w-full bg-white pl-6 pr-4 py-4 border border-black pointer-events-auto"
         >
             <div class="flex items-start">
                 <!-- Icons -->
-                <div x-show="notification.type === 'info'" class="flex-shrink-0">
-                    <span aria-hidden="true" class="w-6 h-6 inline-flex items-center justify-center text-xl font-bold text-gray-400 border-2 border-gray-400 rounded-full">!</span>
+                <div class="flex-shrink-0" x-show="notification.type === 'info'">
+                    <span aria-hidden="true"
+                          class="w-6 h-6 inline-flex items-center justify-center text-xl font-bold text-gray-400 border-2 border-gray-400 rounded-full">!</span>
                     <span class="sr-only">Information:</span>
                 </div>
 
-                <div x-show="notification.type === 'success'" class="flex-shrink-0">
-                    <span aria-hidden="true" class="w-6 h-6 inline-flex items-center justify-center text-lg font-bold text-green-600 border-2 border-green-600 rounded-full">&check;</span>
+                <div class="flex-shrink-0" x-show="notification.type === 'success'">
+                    <span aria-hidden="true"
+                          class="w-6 h-6 inline-flex items-center justify-center text-lg font-bold text-green-600 border-2 border-green-600 rounded-full">&check;</span>
                     <span class="sr-only">Success:</span>
                 </div>
 
-                <div x-show="notification.type === 'error'" class="flex-shrink-0">
-                    <span aria-hidden="true" class="w-6 h-6 inline-flex items-center justify-center text-lg font-bold text-red-600 border-2 border-red-600 rounded-full">&times;</span>
+                <div class="flex-shrink-0" x-show="notification.type === 'error'">
+                    <span aria-hidden="true"
+                          class="w-6 h-6 inline-flex items-center justify-center text-lg font-bold text-red-600 border-2 border-red-600 rounded-full">&times;</span>
                     <span class="sr-only">Error:</span>
                 </div>
 
                 <!-- Text -->
                 <div class="ml-3 w-0 flex-1 pt-0.5">
-                    <p x-text="notification.content" class="text-sm leading-5 font-medium text-gray-900"></p>
+                    <p class="text-sm leading-5 font-medium text-gray-900" x-text="notification.content"></p>
                 </div>
 
                 <!-- Remove button -->
                 <div class="ml-4 flex-shrink-0 flex">
-                    <button @click="transitionOut()" type="button" class="inline-flex text-gray-400">
-                        <svg aria-hidden class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    <button @click="transitionOut()" class="inline-flex text-gray-400" type="button">
+                        <svg aria-hidden class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path clip-rule="evenodd"
+                                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                  fill-rule="evenodd"></path>
                         </svg>
                         <span class="sr-only">Close notification</span>
                     </button>
@@ -516,7 +521,8 @@
     </div><!-- header -->
     <div class="content">
         <div class="wrap">
-            <div class="title text-center font-bold text-[21px] mb-[30px]" x-text="wantToRegister ? 'Sign Up' : 'Login'"></div>
+            <div class="title text-center font-bold text-[21px] mb-[30px]"
+                 x-text="wantToRegister ? 'Sign Up' : 'Login'"></div>
             <div class="form">
                 <form class="signup" x-on:submit.prevent="submit">
                     <div class="mnumber form-element">
@@ -524,16 +530,17 @@
                         <div class="relative">
                             <span class="absolute top-[7px] left-[8px]">0 <span class="text-[#d8d8d8]">|</span></span>
                             <input
+                                    :maxlength="fields.mobile.maxLength"
+                                    @blur="fields.mobile.validate(validationCallback)"
+                                    oninput="if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);"
                                     placeholder="9xxxxxxxxx e.g. 9123456789"
                                     required
                                     style="padding-left: 45px !important;"
                                     type="number"
-                                    :maxlength="fields.mobile.maxLength"
-                                    oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);"
-                                    @blur="fields.mobile.validate(validationCallback)"
                                     x-model="fields.mobile.value"
                             >
-                            <p class="text-red-500 text-xs italic py-2" x-cloak><span x-text="fields.mobile.errorMsg"></span></p>
+                            <p class="text-red-500 text-xs italic py-2" x-cloak><span
+                                    x-text="fields.mobile.errorMsg"></span></p>
                         </div>
                     </div>
                     <template x-if="wantToRegister">
@@ -541,27 +548,29 @@
                             <label class="text-[13px]">Full Name</label>
                             <input
                                     :maxlength="fields.name.maxLength"
-                                    placeholder="[First Name] [Last Name] e.g. Juan Luna"
-                                    required type="text"
                                     @blur="fields.name.validate(validationCallback)"
-                                    aria-label="Full Name"
+                                    aria-label="Full Name" placeholder="[First Name] [Last Name] e.g. Juan Luna"
+                                    required
+                                    type="text"
                                     x-model="fields.name.value"
                             >
-                            <p class="text-red-500 text-xs italic py-2" x-cloak><span x-text="fields.name.errorMsg"></span></p>
+                            <p class="text-red-500 text-xs italic py-2" x-cloak><span
+                                    x-text="fields.name.errorMsg"></span></p>
                         </div>
                     </template>
                     <template x-if="wantToRegister">
                         <div class="bday form-element">
                             <label class="text-[13px]">Birthday</label>
                             <input
+                                    :value="date.toLocaleDateString('sv-en')"
+                                    @blur="fields.birthdate.validate(validationCallback)"
                                     required
                                     type="date"
-                                    @blur="fields.birthdate.validate(validationCallback)"
                                     x-data="{date: new Date($el.dataset.value)}"
-                                    :value="date.toLocaleDateString('sv-en')"
                                     x-model="fields.birthdate.value"
                             >
-                            <p class="text-red-500 text-xs italic py-2" x-cloak><span x-text="fields.birthdate.errorMsg"></span></p>
+                            <p class="text-red-500 text-xs italic py-2" x-cloak><span
+                                    x-text="fields.birthdate.errorMsg"></span></p>
                         </div>
                     </template>
                     <template x-if="wantToRegister">
@@ -569,13 +578,14 @@
                             <label class="text-[13px]">Address</label>
                             <textarea
                                     :maxlength="fields.address.maxLength"
+                                    @blur="fields.address.validate(validationCallback)"
                                     placeholder="By submitting your data, you agree to the privacy policy stated in wikonek.ph/privacy."
                                     required
-                                    @blur="fields.address.validate(validationCallback)"
                                     x-model="fields.address.value"
                             >
                         </textarea>
-                            <p class="text-red-500 text-xs italic py-2" x-cloak><span x-text="fields.address.errorMsg"></span></p>
+                            <p class="text-red-500 text-xs italic py-2" x-cloak><span
+                                    x-text="fields.address.errorMsg"></span></p>
                         </div>
                     </template>
                     <div class="pinnum form-element">
@@ -583,15 +593,16 @@
                         <div class="relative" x-data="{ show: true }">
                             <input
                                     :maxlength="fields.pin.maxLength"
-                                    placeholder="e.g. 1234"
-                                    required
-                                    oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);"
                                     :type="show ? 'password' : 'number'"
                                     @blur="fields.pin.validate(validationCallback)"
+                                    oninput="if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);"
+                                    placeholder="e.g. 1234"
+                                    required
                                     x-model="fields.pin.value"
                             >
                             <div class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5">
-                                <svg :class="{'hidden': !show, 'block':show }" @click="show = !show" class="h-6 text-gray-700"
+                                <svg :class="{'hidden': !show, 'block':show }" @click="show = !show"
+                                     class="h-6 text-gray-700"
                                      fill="none"
                                      viewbox="0 0 576 512"
                                      xmlns="http://www.w3.org/2000/svg">
@@ -600,7 +611,8 @@
                                     </path>
                                 </svg>
 
-                                <svg :class="{'block': !show, 'hidden':show }" @click="show = !show" class="h-6 text-gray-700"
+                                <svg :class="{'block': !show, 'hidden':show }" @click="show = !show"
+                                     class="h-6 text-gray-700"
                                      fill="none"
                                      viewbox="0 0 640 512"
                                      xmlns="http://www.w3.org/2000/svg">
@@ -611,7 +623,8 @@
 
                             </div>
                         </div>
-                        <p class="text-red-500 text-xs italic py-2" x-cloak><span x-text="fields.pin.errorMsg"></span></p>
+                        <p class="text-red-500 text-xs italic py-2" x-cloak><span x-text="fields.pin.errorMsg"></span>
+                        </p>
                     </div>
                     <template x-if="wantToRegister">
                         <div class="confpinnum form-element" style="margin-bottom: 30px;">
@@ -619,15 +632,16 @@
                             <div class="relative" x-data="{ show: true }">
                                 <input
                                         :maxlength="fields.pin_confirmation.maxLength"
-                                        placeholder="e.g. 1234"
-                                        required
-                                        oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);"
                                         :type="show ? 'password' : 'number'"
                                         @blur="fields.pin_confirmation.validate(validationCallback)"
+                                        oninput="if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);"
+                                        placeholder="e.g. 1234"
+                                        required
                                         x-model="fields.pin_confirmation.value"
                                 >
                                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5">
-                                    <svg :class="{'hidden': !show, 'block':show }" @click="show = !show" class="h-6 text-gray-700"
+                                    <svg :class="{'hidden': !show, 'block':show }" @click="show = !show"
+                                         class="h-6 text-gray-700"
                                          fill="none"
                                          viewbox="0 0 576 512"
                                          xmlns="http://www.w3.org/2000/svg">
@@ -636,7 +650,8 @@
                                         </path>
                                     </svg>
 
-                                    <svg :class="{'block': !show, 'hidden':show }" @click="show = !show" class="h-6 text-gray-700"
+                                    <svg :class="{'block': !show, 'hidden':show }" @click="show = !show"
+                                         class="h-6 text-gray-700"
                                          fill="none"
                                          viewbox="0 0 640 512"
                                          xmlns="http://www.w3.org/2000/svg">
@@ -647,24 +662,26 @@
 
                                 </div>
                             </div>
-                            <p class="text-red-500 text-xs italic py-2" x-cloak><span x-text="fields.pin_confirmation.errorMsg"></span></p>
+                            <p class="text-red-500 text-xs italic py-2" x-cloak><span
+                                    x-text="fields.pin_confirmation.errorMsg"></span></p>
                         </div>
                     </template>
                     <template x-if="wantToRegister">
                         <div class="flex items-start mb-6">
                             <div class="flex items-center h-5">
                                 <input
-                                        id="agree"
                                         aria-describedby="agree"
-                                        type="checkbox"
                                         class="w-4 h-4 bg-gray-50 rounded border border-gray-300 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800"
+                                        id="agree"
                                         required
+                                        type="checkbox"
                                         x-model="agreed"
                                 >
                             </div>
                             <div class="ml-3 text-sm">
-                                <label for="agree" class="font-medium text-gray-900 dark:text-gray-300">
-                                    Check here to indicate that you have read and agree to the terms of the LyfLyn.Net Customer Agreement.
+                                <label class="font-medium text-gray-900 dark:text-gray-300" for="agree">
+                                    Check here to indicate that you have read and agree to the terms of the LyfLyn.Net
+                                    Customer Agreement.
                                 </label>
                             </div>
                         </div>
@@ -672,22 +689,23 @@
                     <div class="flex items-start mb-6">
                         <div class="flex items-center h-5">
                             <input
-                                    id="already"
                                     aria-describedby="already"
-                                    type="checkbox"
                                     class="w-4 h-4 bg-gray-50 rounded border border-gray-300 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800"
+                                    id="already"
+                                    type="checkbox"
                                     x-model="wantToLogin"
                             >
                         </div>
                         <div class="ml-3 text-sm">
-                            <label for="already" class="font-medium text-gray-900 dark:text-gray-300">
+                            <label class="font-medium text-gray-900 dark:text-gray-300" for="already">
                                 Already have an account.
                             </label>
                         </div>
                     </div>
                     <template x-if="wantToRegister">
                         <div class="submit form-element">
-                            <input :class="canRegister && agreed ? 'enabled' : 'disabled'" type="submit" value="Register">
+                            <input :class="canRegister && agreed ? 'enabled' : 'disabled'" type="submit"
+                                   value="Register">
                         </div>
                     </template>
                     <template x-if="wantToLogin">
@@ -741,16 +759,18 @@
                         <div class="fname form-element">
                             <label class="text-[13px]">Voucher Code</label>
                             <input
+                                    :maxlength="fields.voucher.maxLength"
                                     @blur="fields.voucher.validate(validationCallback)"
                                     aria-label="Voucher Code"
                                     placeholder="include the dash e.g. 91LB-H537"
                                     required
                                     type="text"
                                     x-model="fields.voucher.value">
-                            <p class="text-red-500 text-xs italic py-2" x-cloak><span x-text="fields.voucher.errorMsg"></span></p>
+                            <p class="text-red-500 text-xs italic py-2" x-cloak><span
+                                    x-text="fields.voucher.errorMsg"></span></p>
                         </div>
                         <div class="submit form-element mt-[30px]">
-                            <input class="enabled" type="submit" :value="caption">
+                            <input :value="caption" class="enabled" type="submit">
                         </div>
                     </form>
                 </div>
@@ -767,6 +787,86 @@
     </div><!-- site-container -->
     <div class="clear-both"></div>
 </div><!-- redeem modal dialog -->
+<div
+        class="modal-wrapper"
+        x-data="{ open: false }"
+        x-on:keyup.escape.window="open = false"
+        x-on:open-transfer-modal.window="open = true"
+        x-show="open"
+>
+    <div
+            class="modal"
+            style="margin: 30px auto;"
+            x-data="transfer"
+            x-on:click.outside="open = false"
+            x-on:submit.prevent="submit"
+    >
+        <div class="header">
+            <div class="logo w-48" style="margin: 0 auto 40px;"><img src="images/wklogo_full.png"/></div>
+        </div><!-- header -->
+        <div class="close-btn absolute right-[20px] top-[30px] bg-[#eeeeee]" x-on:click="open = false">
+            <svg class="h-7 w-7" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path clip-rule="evenodd"
+                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                      fill-rule="evenodd"/>
+            </svg>
+        </div>
+        <div class="content">
+            <div class="wrap">
+                <div class="title text-center font-bold text-[21px] mb-[30px]">Transfer Load</div>
+                <div class="form">
+                    <form class="signup">
+                        <div class="mnumber form-element">
+                            <label class="text-[13px]">Mobile Number</label>
+                            <div class="relative">
+                                <span class="absolute top-[7px] left-[8px]">0 <span
+                                        class="text-[#d8d8d8]">|</span></span>
+                                <input
+                                        :maxlength="fields.mobile.maxLength"
+                                        @blur="fields.mobile.validate(validationCallback)"
+                                        oninput="if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);"
+                                        placeholder="9xxxxxxxxx e.g. 9123456789" required
+                                        style="padding-left: 24px !important;"
+                                        type="number"
+                                        x-model="fields.mobile.value"
+                                >
+                                <p class="text-red-500 text-xs italic py-2" x-cloak><span
+                                        x-text="fields.mobile.errorMsg"></span></p>
+                            </div>
+                        </div>
+                        <div class="bday form-element">
+                            <label class="text-[13px]">Amount Credits</label>
+                            <input
+                                    :maxlength="fields.amount.maxLength"
+                                    @blur="fields.amount.validate(validationCallback)"
+                                    oninput="if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);"
+                                    placeholder="minimum 5 pesos e.g. 100"
+                                    required
+                                    type="number"
+                                    x-model="fields.amount.value"
+                            >
+                            <p class="text-red-500 text-xs italic py-2" x-cloak><span
+                                    x-text="fields.amount.errorMsg"></span></p>
+                            <!--                            <input placeholder="minimum 5 pesos e.g. 100" required type="number" x-model="enteredAmount">-->
+                        </div>
+                        <div class="submit form-element mt-[30px]">
+                            <input :value="caption" class="enabled" type="submit">
+                        </div>
+                    </form>
+                </div>
+                <!-- if successful -->
+                <div class="success-message text-center text-[#26580F] m-[15px]" x-show="transferSucceeded">
+                    <p x-text="message"></p>
+                </div>
+                <!-- if failed -->
+                <div class="error-message text-center text-[#FF0000] m-[15px]" x-show="transferFailed">
+                    <p>Transfer failed! Please try again.</p>
+                </div>
+            </div>
+        </div><!-- content -->
+    </div><!-- site-container -->
+    <div class="clear-both"></div>
+</div><!-- transfer modal dialog -->
 <!-- DASHBOARD TINDERA MODALS -->
 
 <!-- DASHBOARD PAGE -->
@@ -775,11 +875,9 @@
         <div class="header" style="max-width: 600px; margin: 5px auto;">
             <div class="logo float-left"><img class="wklogo" src="images/wklogo_full.png"/></div>
             <div class="wallet-details float-right">
-                <span x-data x-text="$store.wikonek.user.name"></span>
-                <span x-data x-text="$store.wikonek.user.mobile"></span>
                 <div class="wallet-balance float-left text-right pr-2">
-                    <div class="text-[17px] font-bold">₱<span>0.00</span></div>
-                    <div class="text-[12px]">Wallet Balance</div>
+                    <div class="text-[17px] font-bold">₱<span x-text="loadRemaining"></span></div>
+                    <div class="text-[12px]" x-text="captions.balance"></div>
                 </div>
                 <div class="header-buttons float-right">
                     <button class="bg-[#eeeeee] p-2 rounded-full" x-data x-on:click="$dispatch('open-topup-modal')">
@@ -799,7 +897,7 @@
             </div>
         </div><!-- header -->
         <div class="clear-both"></div>
-        <div class="station-id">Station ID: QC-0001</div>
+        <div class="station-id" x-text="captions.station"></div>
         <div class="content relative top-[20px]" style="width: 100%; max-width: 600px;">
             <div class="timer mb-[35px] bg-[#17A0DC] rounded grid grid-cols-4 gap-4 text-center p-4">
                 <div class="timer-element">
@@ -819,12 +917,12 @@
                     <div class="label text-white font-semibold text-sm">Secs</div>
                 </div>
             </div>
-            <div class="text-[#FF0000] text-center mb-[35px]" style="font-weight: bold !important;">You already consumed
-                your FREE internet
+            <div class="text-[#FF0000] text-center mb-[35px]" style="font-weight: bold !important;"
+                 x-text="captions.claimed">
             </div>
-            <div class="text-[#26580F] text-center mb-[35px]"><a style="color: #26580F !important; font-weight: bold; cursor: pointer;" x-data
-                                                                 x-on:click="$dispatch('open-landing-free-modal')">Claim
-                FREE Internet</a></div>
+            <div class="text-[#26580F] text-center mb-[35px]"><a
+                    style="color: #26580F !important; font-weight: bold; cursor: pointer;" x-data
+                    x-on:click="$dispatch('open-landing-free-modal')" x-text="captions.claim"></a></div>
             <div class="nav clear-both grid grid-cols-3 gap-5 mb-[30px]">
                 <button x-data x-on:click="$dispatch('open-count-modal')">
                     <svg class="h-8 w-8" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -839,7 +937,7 @@
                     </svg>
                     <span>Redeem Voucher</span>
                 </button>
-                <button x-data x-on:click="$dispatch('open-transfer-modal')">
+                <button x-data x-on:click="transfer">
                     <svg class="h-8 w-8" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                         <path clip-rule="evenodd"
                               d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm2 10a1 1 0 10-2 0v3a1 1 0 102 0v-3zm2-3a1 1 0 011 1v5a1 1 0 11-2 0v-5a1 1 0 011-1zm4-1a1 1 0 10-2 0v7a1 1 0 102 0V8z"
@@ -864,9 +962,11 @@
                 </div>
             </div>
             <div class="start-browsing">
-                <a class="button block mt-[30px]" x-data x-on:click="$dispatch('open-landing-free-modal')">Start Browsing
+                <a class="button block mt-[30px]" x-data x-on:click="$dispatch('open-landing-free-modal')">Start
+                    Browsing
                     for FREE</a>
-                <a class="button block mt-[30px]" x-data x-on:click="$dispatch('open-landing-credits-modal')">Start Browsing
+                <a class="button block mt-[30px]" x-data x-on:click="$dispatch('open-landing-credits-modal')">Start
+                    Browsing
                     with Credits</a>
             </div>
         </div><!-- content -->
@@ -912,12 +1012,14 @@
                     <div class="label text-white font-semibold text-sm">Wallet Balance</div>
                 </div>
             </div>
-            <div class="text-[#FF0000] text-center mb-[35px]" style="font-weight: bold !important;">Please add funds to your
+            <div class="text-[#FF0000] text-center mb-[35px]" style="font-weight: bold !important;">Please add funds to
+                your
                 wallet balance soon.
             </div>
-            <div class="text-[#26580F] text-center mb-[35px]"><a style="color: #26580F !important; font-weight: bold; cursor: pointer;"
-                                                                 x-data
-                                                                 x-on:click="$dispatch('open-tindera-landing-free-modal')">Claim
+            <div class="text-[#26580F] text-center mb-[35px]"><a
+                    style="color: #26580F !important; font-weight: bold; cursor: pointer;"
+                    x-data
+                    x-on:click="$dispatch('open-tindera-landing-free-modal')">Claim
                 FREE Internet</a></div>
             <div class="nav clear-both grid grid-cols-3 gap-5 mb-[30px]">
                 <button x-data x-on:click="$dispatch('open-tindera-count-modal')">

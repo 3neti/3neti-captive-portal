@@ -255,6 +255,7 @@ document.addEventListener('alpine:init', () => {
         fields: {
             voucher: {
                 value: null,
+                maxLength: 9,
                 rules: ['required', 'regexVoucher'],
                 validate(callback) {
                     let {isValid, errorMsg} = callback(this);
@@ -268,8 +269,8 @@ document.addEventListener('alpine:init', () => {
         redemptionSucceeded: null,
         redemptionFailed: null,
         airtime: 0,
-        reset() {
-            console.log('resetting redemption');
+        clear() {
+            console.log('clearing redemption');
             this.fields.voucher.value = '';
             this.fields.voucher.errorMsg = '';
             this.redemptionSucceeded = null;
@@ -285,7 +286,7 @@ document.addEventListener('alpine:init', () => {
             return this.fields.voucher.isValid
         },
         async api_redeem() {
-            console.log(`# data->registration->api_redeem()`);
+            console.log(`# data->redeem->api_redeem()`);
             const voucher = this.fields.voucher.value;
             const authorization = Alpine.store('wikonek').authorization;
             const url = apiEndPoint+`/redeem/${voucher}`;
@@ -307,8 +308,8 @@ document.addEventListener('alpine:init', () => {
                         console.log(this.airtime, 'this.airtime');
                         // Alpine.store('wikonek').consumption = this.airtime;
                         // console.log(`# - consume airtime`);
-                        // Alpine.store('wikonek').api_ui();
-                        // console.log(`# - set UI`);
+                        console.log(`# - setting UI`);
+                        Alpine.store('wikonek').api_ui();
                         // console.log(`# - resetting the field and statuses`);
                     }
                     else if (obj.status === 404) {
@@ -337,7 +338,7 @@ document.addEventListener('alpine:init', () => {
                 })
                 .finally(() => {
                     console.log('# - finally');
-                    setTimeout(() => this.reset(), Alpine.store('wikonek').config.flash.timeout);
+                    setTimeout(() => this.clear(), Alpine.store('wikonek').config.flash.timeout);
                 })
             ;
         },
@@ -347,9 +348,127 @@ document.addEventListener('alpine:init', () => {
             }
         }
     }))
+    Alpine.data('transfer', () => ({
+        fields: {
+            mobile: {
+                value: null,
+                maxLength: 10,
+                rules: ['required', 'regexMobile'],
+                validate(callback) {
+                    let {isValid, errorMsg} = callback(this);
+                    this.isValid = isValid;
+                    this.errorMsg = errorMsg;
+                },
+                isValid: null,
+                errorMsg: null
+            },
+            amount: {
+                value: null,
+                maxLength: 8,
+                rules: ['required', 'numeric', 'min:5'],
+                validate(callback) {
+                    let {isValid, errorMsg} = callback(this);
+                    this.isValid = isValid;
+                    this.errorMsg = errorMsg;
+                },
+                isValid: null,
+                errorMsg: null
+            },
+        },
+        transferSucceeded: null,
+        transferFailed: null,
+        get caption() {
+            return'Go!!!'
+        },
+        get message() {
+            return `${this.fields.amount.value} successfully transferred to ${this.fields.mobile.value}.`
+        },
+        get minimumRemittance() {
+            return 5.00;
+        },
+        get canTransfer() {
+            return this.fields.mobile.isValid && this.fields.amount.isValid && this.fields.amount.value >= this.minimumRemittance;
+        },
+        clear() {
+            console.log('clearing transfer');
+            if (this.transferSucceeded || !this.fields.mobile.isValid) {
+                this.fields.mobile.value = '';
+                this.fields.mobile.isValid = null;
+                this.fields.mobile.errorMsg = null;
+            }
+            if (this.transferSucceeded || !this.fields.amount.isValid) {
+                this.fields.amount.value = null;
+                this.fields.amount.isValid = null;
+                this.fields.amount.errorMsg = null;
+            }
+            this.transferSucceeded = null;
+            this.transferFailed = null;
+        },
+        async api_transfer() {
+            console.log(`# data->transfer->api_transfer()`);
+            const url = apiEndPoint+`/transfer/${this.fields.mobile.value}/${this.fields.amount.value}`;
+            console.log(`# - fetching ${url}`);
+            const authorization = Alpine.store('wikonek').authorization;
+            console.log(`# data->transfer->api_transfer() -> ${url}`);
+            await fetch(url, {
+                method: 'POST',
+                headers: {"Authorization": "Bearer "+ Alpine.store('wikonek').token}
+            })
+                .then(response =>  response.json().then(data => ({status: response.status, body: data, isOk: response.ok})))
+                .then(obj => {
+                    if (obj.isOk === true) {
+                        console.log(`# - successful`);
+                        console.log(`# - setting UI`);
+                        Alpine.store('wikonek').api_ui();
+                    }
+                    else if (obj.status === 404) {
+                        console.log(`# - mobile number does not exist`);
+                        this.fields.mobile.isValid = false;
+                        console.log(`# - displaying error message`);
+                        this.fields.mobile.errorMsg = 'Mobile number does not exist.';
+                    }
+                    else if (obj.status === 406) {
+                        console.log(`# - insufficient funds`);
+                        this.fields.amount.isValid = false;
+                        console.log(`# - displaying error message`);
+                        this.fields.amount.errorMsg = 'Insufficient funds.';
+                    }
+                    else {
+                        console.log(`# - displaying error message`);
+                    }
+                    this.transferSucceeded = obj.isOk;
+                    this.transferFailed = !obj.isOk;
+                })
+                .catch((error) => {
+                    console.log('# - error');
+                })
+                .finally(() => {
+                    console.log('# - finally');
+                    setTimeout(() => this.clear(), Alpine.store('wikonek').config.flash.timeout);
+                })
+            ;
+        },
+        submit() {
+            if (this.canTransfer) {
+                this.api_transfer();
+            }
+        }
+    }))
     Alpine.data('dashboard', (mode) => ({
+        captions: {
+            balance: 'Wallet Balance',
+            station: 'Station ID: QC-0001',
+            claim: 'Claim your free internet.',
+            claimed: 'You already claimed your free internet.',
+        },
+        get loadRemaining() {
+            return (Alpine.store('wikonek').data.ui.balance.load.amount * 1).toLocaleString();
+        },
         redeem() {
             this.$dispatch('open-redeem-modal');
+        },
+        transfer() {
+            this.$dispatch('open-transfer-modal');
         },
     }))
     Alpine.store('wikonek', {
@@ -364,6 +483,7 @@ document.addEventListener('alpine:init', () => {
         },
         data: {
             touch: {
+                day_pass_today: null,
                 device: {
                     user: {
                         mobile: ''
@@ -374,6 +494,28 @@ document.addEventListener('alpine:init', () => {
                 user: {
                     mobile: ''
                 }
+            },
+            ui: {
+                balance: {
+                    load: {
+                        amount: 5370.00,
+                        units: '',
+                        get formatted() {
+                            return `${this.amount} ${this.units}`
+                        }
+                    },
+                    airtime: {
+                        amount: 0,
+                        units: ''
+                    }
+                },
+                products: [
+                    {
+                        code: '1HIA',
+                        name: 'UNLI Data 1 Hour',
+                        rate: '₱ 5.00'
+                    }
+                ]
             },
         },
         get token() {
@@ -416,7 +558,9 @@ document.addEventListener('alpine:init', () => {
             console.log('* store->wikonek->init()');
             this.registered = false;
             this.loadCustomValidations();
-            this.api_touch().then(() => this.api_station());
+            this.api_touch()
+                .then(() => this.api_station())
+                .finally(() => {this.api_ui()});
         },
         loadCustomValidations() {
             console.log('** store->wikonek->loadCustomValidations()');
@@ -517,6 +661,36 @@ document.addEventListener('alpine:init', () => {
                 .finally(() => {
                     console.log('# - finally');
                 })
+        },
+        async api_ui() {
+            console.log('* store->wikonek->api_ui()');
+            const url = apiEndPoint+`/ui`
+            console.log(`** api_ui() -> ${url}`)
+            await fetch(url, {
+                method: 'GET',
+                headers: {"Authorization": "Bearer "+ Alpine.store('wikonek').token}
+            })
+                .then(response =>  response.json().then(data => ({status: response.status, body: data, isOk: response.ok})))
+                .then(obj => {
+                    if (obj.isOk === true) {
+                        console.log(`# - successful`);
+                        this.data.ui = obj.body.data;
+                        console.log(this.data.ui, 'ui');
+                    }
+                    else {
+                        console.log(`# - failure`);
+                    }
+                })
+                .catch((error) => {
+                    console.log('# - error');
+                })
+                .finally(() => {
+                    console.log('# - finally');
+                })
+                // .then(data => {
+                //     // this.data.ui = data.data
+                //     this.data.setUI(data.data)
+                // })
         },
     })
 })
