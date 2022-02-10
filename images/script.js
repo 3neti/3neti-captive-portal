@@ -408,8 +408,6 @@ document.addEventListener('alpine:init', () => {
             console.log(`# data->transfer->api_transfer()`);
             const url = apiEndPoint+`/transfer/${this.fields.mobile.value}/${this.fields.amount.value}`;
             console.log(`# - fetching ${url}`);
-            const authorization = Alpine.store('wikonek').authorization;
-            console.log(`# data->transfer->api_transfer() -> ${url}`);
             await fetch(url, {
                 method: 'POST',
                 headers: {"Authorization": "Bearer "+ Alpine.store('wikonek').token}
@@ -453,6 +451,85 @@ document.addEventListener('alpine:init', () => {
                 this.api_transfer();
             }
         }
+    }))
+    Alpine.data('purchase', () => ({
+        image: splashURL,
+        purchaseSucceeded: null,
+        purchaseFailed: null,
+        get title() {
+            return 'Product Bundles';
+        },
+        get caption() {
+            return'Go!!!'
+        },
+        get minimumSpend() {
+            return 5.00;
+        },
+        get canBuy() {
+            return +Alpine.store('wikonek').wallet.load.amount >= this.minimumSpend;
+        },
+        get products() {
+            return Alpine.store('wikonek').data.ui.products
+        },
+        get product() {
+            return Alpine.store('wikonek').selectedProduct;
+        },
+        price(code) {
+            const product = this.products.find(n => n.code == code);
+
+            return parseProductRate(product.rate)
+        },
+        async api_purchase(code) {
+            console.log(`# data->transfer->api_purchase()`);
+            const product = this.products.find(n => n.code == code)
+            const url = apiEndPoint+`/purchase/${product.code}`;
+            console.log(`# fetching ${url}`);
+            console.log(`# product -> ${product}`);
+            await fetch(url, {
+                method: 'POST',
+                headers: {"Authorization": "Bearer "+ Alpine.store('wikonek').token}
+            })
+                .then(response =>  response.json().then(data => ({status: response.status, body: data, isOk: response.ok})))
+                .then(obj => {
+                    if (obj.isOk === true) {
+                        console.log(`# - successful`);
+                        Alpine.store('wikonek').data.purchase = obj.body.data;
+                        console.log(`# - setting UI`);
+                        Alpine.store('wikonek').api_ui();
+                    }
+                    else {
+                        console.log(`# - displaying error message`);
+                    }
+                    this.purchaseSucceeded = obj.isOk;
+                    this.purchaseFailed = !obj.isOk;
+                })
+                .catch((error) => {
+                    console.log('# - error');
+                })
+                .finally(() => {
+                    console.log('# - finally');
+                })
+                // .then(response => response.json())
+                // .then(data => {
+                //     Alpine.store('wikonek').data.setPurchase(data.data)
+                // })
+                // .then(() => {
+                //     Alpine.store('wikonek').consumption = Alpine.store('wikonek').purchased.airtime
+                //     Alpine.store('wikonek').user = Alpine.store('wikonek').purchased.user
+                // })
+                // .then(() => {
+                //     Alpine.store('wikonek').api_ui();
+                // })
+        },
+        confirm(code) {
+            Alpine.store('wikonek').selectedProduct = this.products.find(n => n.code == code);
+            this.$dispatch('open-confirm-purchase-modal');
+        },
+        submit() {
+            console.log(`# data->transfer->submit()`);
+            this.api_purchase(this.product.code);
+            this.$dispatch('open-landing-purchase-modal');
+        },
     }))
     Alpine.data('dashboard', (mode) => ({
         captions: {
@@ -518,6 +595,11 @@ document.addEventListener('alpine:init', () => {
                 ]
             },
         },
+        selectedProduct: {
+            code: '1HIA',
+            name: 'UNLI Data 1 Hour',
+            rate: '₱ 5.00'
+        },
         get token() {
             return this.data.touch.token;
         },
@@ -553,6 +635,9 @@ document.addEventListener('alpine:init', () => {
         },
         get userMode() {
             return !this.tinderaMode;
+        },
+        get wallet() {
+            return this.data.ui.balance
         },
         init() {
             console.log('* store->wikonek->init()');
@@ -708,4 +793,7 @@ function isEmpty(str) {
     return str === undefined || str === null
         || typeof str !== 'string'
         || str.match(/^ *$/) !== null;
+}
+function parseProductRate(str) {
+    return +str.substring(str.lastIndexOf('₱')+1)
 }
