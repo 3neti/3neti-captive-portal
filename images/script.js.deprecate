@@ -744,6 +744,46 @@ document.addEventListener('alpine:init', () => {
             }
         }
     }))
+    Alpine.data('airtime', () => ({
+        code: '',
+        caption: 'Airtime',
+        handle: null,
+        get days() {
+            return Math.floor(this.code / 86400)
+        },
+        get hours() {
+            return Math.floor((this.code % 86400) / 3600)
+        },
+        get minutes() {
+            return Math.floor(((this.code % 86400) % 3600) / 60)
+        },
+        get seconds() {
+            return ((this.code % 86400) % 3600) % 60;
+        },
+        get timeRemaining() {
+            return `${this.days}:${pad(this.hours, 2)}:${pad(this.minutes, 2)}.${pad(this.seconds, 2)}`
+        },
+        init() {
+            this.api_ctime();
+        },
+        api_ctime() {
+            const url = '/pesofi_ctime/';
+            const interval = 1000;
+            console.log(`# data.timer.init() fetch-> ${url}`);
+            this.handle = setInterval(() => {
+                fetch(url, {method: 'GET'})
+                    .then(response => response.text())
+                    .then(str => {
+                        this.code = parseRemainingTime(str);
+                        Alpine.store('wikonek').data.session.airtime.secondsRemaining = this.code;
+                    })
+            }, interval);
+        },
+        reset() {
+            clearTimeout(this.handle);
+            this.api_ctime();
+        }
+    }))
     Alpine.data('dashboard', (mode) => ({
         captions: {
             balance: 'Wallet Balance',
