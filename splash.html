@@ -1778,8 +1778,7 @@
                 console.log(`# data->redeem->api_redeem()`);
                 const voucher = this.fields.voucher.value;
                 const authorization = Alpine.store('wikonek').authorization;
-                const url = apiEndPoint+`/redeem/${voucher}`;
-                console.log(`# - fetching ${url}`);
+                const url = apiEndPoint+`/redeem/${voucher}`;;
                 console.log(`# - using voucher code ${voucher}`);
                 await fetch(url, {
                     method: 'POST',
@@ -1787,18 +1786,18 @@
                 })
                     .then(response =>  response.json().then(data => ({status: response.status, body: data, isOk: response.ok})))
                     .then(obj => {
+                        let redemption_data = {airtime: 0};
                         if (obj.isOk === true) {
-                            console.log(`# - successful`);
-                            let redemption = obj.body.data;
-                            console.log(`# - redemption data`);
-                            console.log(redemption, 'redemption');
-                            this.airtime = redemption.airtime;
-                            console.log(`# - airtime`);
-                            console.log(this.airtime, 'this.airtime');
+                            console.log(`# - voucher redemption successful`);
+                            redemption_data = obj.body.data;
+                            console.log(redemption_data, 'redemption');
+                            // this.airtime = redemption_data.airtime;
+                            // console.log(`# - airtime`);
+                            // console.log(this.airtime, 'this.airtime');
                             // Alpine.store('wikonek').consumption = this.airtime;
                             // console.log(`# - consume airtime`);
-                            console.log(`# - setting UI`);
-                            Alpine.store('wikonek').api_ui();
+                            // console.log(`# - setting UI`);
+                            // Alpine.store('wikonek').api_ui();
                             // console.log(`# - resetting the field and statuses`);
                         }
                         else if (obj.status === 404) {
@@ -1821,12 +1820,19 @@
                         }
                         this.redemptionSucceeded = obj.isOk;
                         this.redemptionFailed = !obj.isOk;
+
+                        return redemption_data;
                     })
-                    .catch((error) => {
-                        console.log('# - error');
+                    .then(redemption_data => {
+                        this.airtime = redemption_data.airtime;
+                        if (this.airtime > 0) {
+                            console.log('consuming redemption airtime');
+                            Alpine.store('wikonek').api_consume(this.airtime)
+                                .then(() => Alpine.store('wikonek').api_ui());
+                        }
                     })
                     .finally(() => {
-                        console.log('# - finally');
+                        console.log('# - clearing flash messages');
                         setTimeout(() => this.clear(), Alpine.store('wikonek').config.flash.timeout);
                     })
                 ;
@@ -2047,7 +2053,7 @@
                         console.log('storing checkin data');
                         Alpine.store('wikonek').data.checkin = checkin_data;
                         if (checkin_data.airtime > 0) {
-                            console.log('consuming checkin data');
+                            console.log('consuming checkin airtime');
                             Alpine.store('wikonek').api_consume(checkin_data.airtime)
                                 .then(() => Alpine.store('wikonek').api_ui());
                         }
