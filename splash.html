@@ -1090,6 +1090,52 @@
 </div><!-- transfer modal dialog -->
 <div
         class="modal-wrapper"
+        x-data="{ open: false }"
+        x-on:keyup.escape.window="open = false"
+        x-on:open-count-modal.window="open = true"
+        x-show="open"
+>
+    <div
+            class="modal"
+            style="margin: 30px auto;"
+            x-data="count"
+            x-on:click.outside="open = false"
+            x-on:submit.prevent
+    >
+        <div class="header">
+            <div class="logo w-48" style="margin: 0 auto 40px;"><img src="images/wklogo_full.png"/></div>
+        </div><!-- header -->
+        <div class="close-btn absolute right-[20px] top-[30px] bg-[#eeeeee]" x-on:click="open = false">
+            <svg class="h-7 w-7" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path clip-rule="evenodd"
+                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                      fill-rule="evenodd"/>
+            </svg>
+        </div>
+        <div class="content">
+            <div class="wrap">
+                <div class="title text-center font-bold text-[21px] mb-[30px]" x-text="amount"></div>
+                <div class="time-insert-coin">
+                    <span class="block text-center" x-show="disarmed" x-text="`Click on the '${caption}' button below. You have ${ticks} seconds to insert coins.`"></span>
+                    <span class="countdown" x-text="timeRemaining"></span>
+                </div>
+                <div class="form relative">
+                    <div class="coinbank">
+                        <div class="vcenter" style="width:160px;">
+                            <button class="wrap insertcoin" x-on:click="toggle">
+                                <img class="absolute top-[10px] left-[10px]" src="images/pointer.png"/>
+                                <span x-text="caption"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- content -->
+    </div><!-- site-container -->
+    <div class="clear-both"></div>
+</div><!-- count modal dialog -->
+<div
+        class="modal-wrapper"
         x-data="egress('checkin')"
         x-on:keyup.escape.window="open = false"
         x-on:open-landing-free-modal.window="open = true"
@@ -1169,6 +1215,47 @@
     </div><!-- site-container -->
     <div class="clear-both"></div>
 </div><!-- landing page modal PURCHASE -->
+<div
+        class="modal-wrapper"
+        x-data="egress('count')"
+        x-on:keyup.escape.window="open = false"
+        x-on:open-landing-count-modal.window="open = true"
+        x-show="open"
+>
+    <div
+            class="modal"
+            style="margin: 30px auto;"
+            x-on:click.outside="open = false"
+            x-on:submit.prevent
+    >
+        <div class="header">
+            <div class="logo w-48" style="margin: 0 auto 40px;"><img src="images/wklogo_full.png"/></div>
+        </div><!-- header -->
+        <div class="close-btn absolute right-[20px] top-[30px] bg-[#eeeeee]" x-on:click="open = false">
+            <svg class="h-7 w-7" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path clip-rule="evenodd"
+                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                      fill-rule="evenodd"/>
+            </svg>
+        </div>
+        <div class="content">
+            <div class="text-center" style="width: 300px;">
+                <div style="width: 300px;">
+                    <div class="mb-[30px] text-[15px]"><span x-text="payload"> </span> <span class="font-bold block" x-text="message"></span>
+                    </div>
+                    <img :src="image" alt="splash"/>
+                    <div class="notice">
+                        <div class="text-[15px] mt-[30px]">For inquiries or concerns, please visit:</div>
+                        <div class="text-[15px] font-bold"><a href="https://wikonek.ph">https://wikonek.ph</a></div>
+                    </div>
+                    <div class="clear-both"></div>
+                    <a class="button block mt-[30px]" :href="landing" x-text="caption"></a>
+                </div>
+            </div>
+        </div><!-- content -->
+    </div><!-- site-container -->
+    <div class="clear-both"></div>
+</div><!-- landing page modal COUNT -->
 <!-- DASHBOARD TINDERA MODALS -->
 
 <!-- DASHBOARD PAGE -->
@@ -1384,6 +1471,7 @@
     const splashURL = `http://${backendIPAddress}/splash`; // image of franchisee
     const lguURL = `http://${backendIPAddress}/lgu`; // image of government sponsor
     const landingURL = `http://${backendIPAddress}/landing`;
+    const dummyClientMACAddress = '20:6d:b6:6c:d5:37';
 
     document.addEventListener('alpine:init', () => {
         Alpine.data('ingress', () => ({
@@ -1533,6 +1621,7 @@
                             Alpine.store('wikonek').user = obj.body.data.user;
                             console.log(`# - hydrating user`);
                             console.log(Alpine.store('wikonek').user, 'user');
+                            this.connection.status.backend = true;
                             this.$dispatch('notify', { content: `Registration successful!`, type: 'success'});
                         }
                         else if (obj.status === 422) {
@@ -1541,6 +1630,12 @@
                             this.fields.mobile.errorMsg = 'Mobile number is already used.';
                             console.log(`# - displaying error message`);
                             this.$dispatch('notify', { content: `Registration failed!`, type: 'error'});
+                        }
+                        else if (obj.status === 503) {
+                            this.connection.status.backend = false;
+                        }
+                        else if (obj.status === 504) {
+                            this.connection.status.backend = false;
                         }
                     })
                     .catch((error) => {
@@ -1572,7 +1667,14 @@
                             console.log(`# - successful`);
                             this.token = obj.body;
                             console.log(this.token, 'token');
+                            this.connection.status.backend = true;
                             this.$dispatch('notify', { content: `Login successful!`, type: 'success'});
+                        }
+                        else if (obj.status === 503) {
+                            this.connection.status.backend = false;
+                        }
+                        else if (obj.status === 504) {
+                            this.connection.status.backend = false;
                         }
                         else {
                             console.log(`# - failure`);
@@ -1601,6 +1703,13 @@
                         if (obj.isOk === true) {
                             console.log(`# - associate successful`);
                             console.log(obj.body, 'json response');
+                            this.connection.status.backend = true;
+                        }
+                        else if (obj.status === 503) {
+                            this.connection.status.backend = false;
+                        }
+                        else if (obj.status === 504) {
+                            this.connection.status.backend = false;
                         }
                         else {
                             console.log(`# - displaying error message`);
@@ -1717,12 +1826,19 @@
                             console.log(`# - successful`);
                             console.log(`# - hydrating user`);
                             this.updateProfileSucceeded = true;
+                            this.connection.status.backend = true;
                         }
                         else if (obj.status === 401) {
                             console.log(`# - displaying error message`);
                             this.fields.old_pin.isValid = false;
                             this.fields.old_pin.errorMsg = 'Wrong PIN';
                             this.updateProfileFailed = true;
+                        }
+                        else if (obj.status === 503) {
+                            this.connection.status.backend = false;
+                        }
+                        else if (obj.status === 504) {
+                            this.connection.status.backend = false;
                         }
                     })
                     .catch((error) => {
@@ -1791,14 +1907,7 @@
                             console.log(`# - voucher redemption successful`);
                             redemption_data = obj.body.data;
                             console.log(redemption_data, 'redemption');
-                            // this.airtime = redemption_data.airtime;
-                            // console.log(`# - airtime`);
-                            // console.log(this.airtime, 'this.airtime');
-                            // Alpine.store('wikonek').consumption = this.airtime;
-                            // console.log(`# - consume airtime`);
-                            // console.log(`# - setting UI`);
-                            // Alpine.store('wikonek').api_ui();
-                            // console.log(`# - resetting the field and statuses`);
+                            this.connection.status.backend = true;
                         }
                         else if (obj.status === 404) {
                             console.log(`# - voucher code is invalid`);
@@ -1811,6 +1920,12 @@
                             this.fields.voucher.isValid = false;
                             console.log(obj.body.message, `# - displaying error message`);
                             this.fields.voucher.errorMsg = 'Voucher Code is already used.';
+                        }
+                        else if (obj.status === 503) {
+                            this.connection.status.backend = false;
+                        }
+                        else if (obj.status === 504) {
+                            this.connection.status.backend = false;
                         }
                         else {
                             console.log(`# - general exception`);
@@ -1912,6 +2027,7 @@
                         if (obj.isOk === true) {
                             console.log(`# - successful`);
                             console.log(`# - setting UI`);
+                            this.connection.status.backend = true;
                             Alpine.store('wikonek').api_ui();
                         }
                         else if (obj.status === 404) {
@@ -1925,6 +2041,12 @@
                             this.fields.amount.isValid = false;
                             console.log(`# - displaying error message`);
                             this.fields.amount.errorMsg = 'Insufficient funds.';
+                        }
+                        else if (obj.status === 503) {
+                            this.connection.status.backend = false;
+                        }
+                        else if (obj.status === 504) {
+                            this.connection.status.backend = false;
                         }
                         else {
                             console.log(`# - displaying error message`);
@@ -1991,6 +2113,13 @@
                         if (obj.isOk === true) {
                             console.log(`# - purchase successful`);
                             Alpine.store('wikonek').data.purchase = purchase_data;
+                            this.connection.status.backend = true;
+                        }
+                        else if (obj.status === 503) {
+                            this.connection.status.backend = false;
+                        }
+                        else if (obj.status === 504) {
+                            this.connection.status.backend = false;
                         }
                         else {
                             console.error(`# - failed to purchase`);
@@ -2042,6 +2171,13 @@
                         if (obj.isOk === true) {
                             console.log(`# - checkin successful`);
                             checkin_data = obj.body.data;
+                            this.connection.status.backend = true;
+                        }
+                        else if (obj.status === 503) {
+                            this.connection.status.backend = false;
+                        }
+                        else if (obj.status === 504) {
+                            this.connection.status.backend = false;
                         }
                         else {
                             console.error(`# - failed to checkin`);
@@ -2088,7 +2224,7 @@
                     case 'purchase':
                         return parseProductRate(Alpine.store('wikonek').data.purchase.product.rate);
                     case 'count' :
-                        return '₱ ' + Alpine.store('wikonek').counted + ' is equivalent to ';
+                        return '₱ ' + Alpine.store('wikonek').data.count.cumulative + ' is equivalent to ';
                 }
             },
             get message() {
@@ -2146,7 +2282,12 @@
             },
             init() {
                 console.log(`# data->airtime->init()`);
-                this.api_ctime();
+                if (Alpine.store('wikonek').connection.status.gateway === true) {
+                    this.api_ctime();
+                }
+                else {
+                    console.log('# - no airtime');
+                }
             },
             api_ctime() {
                 console.log(`# data->airtime->api_ctime()`);
@@ -2175,6 +2316,167 @@
                 this.api_ctime();
             }
         }))
+        Alpine.data('count', () => ({
+            ticks: null,
+            armHandle: null,
+            statusHandle: null,
+            armed: false,
+            get disarmed() {
+                return ! this.armed;
+            },
+            coins: [],
+            get count() {
+                return this.cumulative.length;
+            },
+            previous: 0,
+            cumulative: 0,
+            get amount() {
+                return '₱ ' + this.cumulative + '.00';
+            },
+            get caption() {
+                let retval = 'Insert Coin';
+                if (this.armed) {
+                    if (this.cumulative > 0) {
+                        retval = 'Go!!!';
+                    }
+                    else {
+                        retval = 'Stop!'
+                    }
+                }
+
+                return retval;
+            },
+            get minutes() {
+                return Math.floor(((this.ticks % 86400) % 3600) / 60)
+            },
+            get seconds() {
+                return ((this.ticks % 86400) % 3600) % 60;
+            },
+            get timeRemaining() {
+                return `${pad(this.minutes, 2)}:${pad(this.seconds, 2)}`
+            },
+            set coinsInserted(value) {
+                if (value > 0) {
+                    if (value != this.cumulative) {
+                        let coin = value - this.cumulative
+                        this.coins.push(coin)
+                        this.previous = coin
+                        this.cumulative = value
+                        console.log(`cumulative ${this.cumulative}`)
+                        console.log(`coins ${this.coins}`)
+                    }
+                }
+            },
+            get coinsInserted() {
+                return this.coins;
+            },
+            init() {
+                console.log('# data->count->init()');
+                this.reset();
+            },
+            arm() {
+                console.log('# data->count->arm()');
+                const interval = 1000;
+                this.armed = true;
+                this.reset();
+                this.armHandle = setInterval(() => {
+                    this.ticks--;
+                    this.check();
+                }, interval);
+                this.api_arm();
+            },
+            check() {
+                console.log('# data->count->check()');
+                if (this.ticks <= 0) {
+                    this.disarm();
+                }
+            },
+            disarm() {
+                console.log('# data->count->disarm()');
+                this.armed = false;
+                clearTimeout(this.armHandle);
+                clearTimeout(this.statusHandle)
+                this.api_done();
+            },
+            reset() {
+                console.log('# data->count->reset()');
+                this.coinsInserted = 0;
+                this.ticks = Alpine.store('wikonek').config.coins.expiry;
+            },
+            toggle() {
+                console.log('# data->count->toggle()');
+                this.armed ? this.disarm() : this.arm();
+            },
+            api_arm() {
+                console.log('# data->count->api_arm()');
+                const url = '/pesofi_armcoinslot/';
+                console.log(`# fetch-> ${url}`);
+                fetch(url, {method: 'GET'}).then(() => {
+                    this.api_status()}
+                )
+            },
+            api_status() {
+                console.log('# data->count->api_status()');
+                const url = `/pesofi_statuscoinslot/`;
+                console.log(`# data.coin.api_status() fetch-> ${url}`);
+                this.statusHandle = setInterval(() => {
+                    fetch(url, {method: 'GET'})
+                        .then(response => response.text())
+                        .then(str => {
+                            this.coinsInserted = parseCoinsInserted(str);
+                        })
+                }, 500);
+            },
+            report_coins() {
+                console.log('# data->count->report_coins()');
+                if (this.coins.length > 0) {
+                    this.api_count()
+                }
+            },
+            async api_count() {
+                console.log('# data->count->api_count()');
+                const device = Alpine.store('wikonek').data.touch.device.identifier;
+                const station = Alpine.store('wikonek').station.identifier;
+                const comma_delimited_coins = this.coins.toString();
+                const url = apiEndPoint+`/count/${device}/${station}/${comma_delimited_coins}`;
+                await fetch(url, {
+                    method: 'POST',
+                    headers: {"Authorization": "Bearer "+ Alpine.store('wikonek').token}
+                })
+                    .then(response =>  response.json().then(data => ({status: response.status, body: data, isOk: response.ok})))
+                    .then(obj => {
+                        if (obj.isOk === true) {
+                            console.log(`# - count successful`);
+                            this.connection.status.backend = true;
+                        }
+                        else if (obj.status === 503) {
+                            this.connection.status.backend = false;
+                        }
+                        else if (obj.status === 504) {
+                            this.connection.status.backend = false;
+                        }
+                        else {
+                            console.error(`# - failed to count`);
+                        }
+                    })
+            },
+            api_done() {
+                const url = '/pesofi_donecoinslot/';
+                console.log(`# data.coin.api_done() fetch-> ${url}`);
+                fetch(url, {method: 'GET'})
+                    .then(() => {
+                        this.report_coins()
+                    })
+                    .then(() => {
+                        if (this.cumulative > 0) {
+                            // Alpine.store('wikonek').done();
+                            // Alpine.store('wikonek').counted = this.cumulative;
+                            Alpine.store('wikonek').data.count.cumulative = this.cumulative;
+                            this.$dispatch('open-landing-count-modal');
+                        }
+                    })
+            }
+        }))
         Alpine.data('dashboard', (mode) => ({
             captions: {
                 balance: 'Wallet Balance',
@@ -2195,17 +2497,25 @@
         Alpine.store('wikonek', {
             connection: {
                 status: {
-                    gateway: false,
+                    get network() {
+                        return navigator.onLine === true;
+                    },
+                    get gateway() {
+                        return (dummyClientMACAddress !== Alpine.store('wikonek').config.macAddress);
+                    },
                     backend: false,
-                }
+                },
             },
             config: {
                 pinSize: 4,
                 // macAddress: '10:6d:b6:6c:d5:37'
-                macAddress: '20:6d:b6:6c:d5:37',
+                macAddress: dummyClientMACAddress,
                 stationID: '803F5D9D9419',
                 flash: {
                     timeout: 10 * 1000,
+                },
+                coins: {
+                    expiry: 30
                 }
             },
             data: {
@@ -2269,6 +2579,9 @@
                         rate: 'P 0.00',
                     }
                 },
+                count: {
+                    cumulative: 0,
+                },
             },
             selectedProduct: {
                 code: '1HIA',
@@ -2329,13 +2642,40 @@
             get url_landing() {
                 return landingURL;
             },
+            configure() {
+                console.log('* store->wikonek->configure()');
+                if (typeof $queueTime !== 'undefined') {
+                    this.config.coins.expiry = $queueTime;
+                    console.log(`** setting queue time to ${this.config.coins.expiry} seconds`);
+                }
+                else {
+                    console.log(`** using ${this.config.coins.expiry} seconds as default value for queue time`);
+                }
+
+                const mac = `$clientmac`;
+                if (mac === "\$clientmac") {
+                    console.log(`** using ${this.config.macAddress} as default value for the  MAC address`);
+                }
+                else {
+                    this.config.macAddress = mac;
+                    console.log(`** setting the client MAC address to ${this.config.macAddress}`);
+                }
+            },
+            report() {
+                console.log('* store->wikonek->report()');
+                console.log(`** this.connection.status.internet = ${this.connection.status.network}`);
+                console.log(`** this.connection.status.gateway = ${this.connection.status.gateway}`);
+                console.log(`** this.connection.status.backend = ${this.connection.status.backend}`);
+            },
             init() {
                 console.log('* store->wikonek->init()');
                 this.registered = false;
                 this.loadCustomValidations();
+                this.configure();
                 this.api_touch()
                     .then(() => this.api_station())
-                    .finally(() => {this.api_ui()});
+                    .then(() => this.api_ui())
+                    .finally(() => {this.report()});
             },
             loadCustomValidations() {
                 console.log('** store->wikonek->loadCustomValidations()');
@@ -2379,6 +2719,7 @@
             async api_touch() {
                 console.log('* store->wikonek->api_touch()');
                 const device = this.config.macAddress; //TODO: change this
+
                 const device_name = 'mobile';
                 const url = apiEndPoint+`/touch/${device}/${device_name}`;
                 await fetch(url, {method: 'POST'})
@@ -2388,6 +2729,13 @@
                             console.log(`* - touch base successful`);
                             this.data.touch = obj.body.data;
                             console.log(this.data.touch, 'touch');
+                            this.connection.status.backend = true;
+                        }
+                        else if (obj.status === 503) {
+                            this.connection.status.backend = false;
+                        }
+                        else if (obj.status === 504) {
+                            this.connection.status.backend = false;
                         }
                         else {
                             console.error('* - failed to touch base');
@@ -2408,6 +2756,13 @@
                             console.log('# - station information retrieval successful');
                             this.data.station = obj.body.data;
                             console.log(this.data.station, 'this.data.station');
+                            this.connection.status.backend = true;
+                        }
+                        else if (obj.status === 503) {
+                            this.connection.status.backend = false;
+                        }
+                        else if (obj.status === 504) {
+                            this.connection.status.backend = false;
                         }
                         else {
                             console.error('# - failed to retrieve station information');
@@ -2427,9 +2782,16 @@
                             console.log('# - ui retrieval successful');
                             this.data.ui = obj.body.data;
                             console.log(this.data.ui, 'ui');
+                            this.connection.status.backend = true;
+                        }
+                        else if (obj.status === 503) {
+                            this.connection.status.backend = false;
+                        }
+                        else if (obj.status === 504) {
+                            this.connection.status.backend = false;
                         }
                         else {
-                            console.error(`# - failure`);
+                            console.error('# - failed to retrieve ui');
                         }
                     })
             },
@@ -2447,6 +2809,13 @@
                         if (obj.isOk === true) {
                             console.log('# - consumption successful');
                             consumption_data = obj.body.data;
+                            this.connection.status.backend = false;
+                        }
+                        else if (obj.status === 503) {
+                            this.connection.status.backend = false;
+                        }
+                        else if (obj.status === 504) {
+                            this.connection.status.backend = false;
                         }
                         else {
                             console.error(`# - failed to consume`);
@@ -2498,6 +2867,23 @@
     }
     function parseRemainingTime(str) {
         return str.substring(str.lastIndexOf('t') + 1, str.lastIndexOf('p'));
+    }
+    function parseCoinsInserted(str) {
+        return str.substring(str.indexOf('parent.coin=') + 12, str.indexOf(';'));
+    }
+    function pad(num, size) {
+        num = num.toString();
+        while (num.length < size) num = "0" + num;
+        return num;
+    }
+    function checkServer(url, timeout) {
+        const controller = new AbortController();
+        const signal = controller.signal;
+        const options = { mode: 'no-cors', signal };
+        return fetch(url, options)
+            .then(setTimeout(() => { controller.abort() }, timeout))
+            .then(response => console.log('Check server response:', response.statusText))
+            .catch(error => console.error('Check server error:', error.message));
     }
 </script>
 <!-- footer scripts end -->
