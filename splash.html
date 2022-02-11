@@ -1008,86 +1008,89 @@
     </div><!-- site-container -->
     <div class="clear-both"></div>
 </div><!-- redeem modal dialog -->
-<div
-        class="modal-wrapper"
-        x-data="{ open: false }"
-        x-on:keyup.escape.window="open = false"
-        x-on:open-transfer-modal.window="open = true"
-        x-show="open"
->
+<div x-data="transfer">
     <div
-            class="modal"
-            style="margin: 30px auto;"
-            x-data="transfer"
-            x-on:click.outside="open = false"
-            x-on:submit.prevent="submit"
+            class="modal-wrapper"
+            x-data="{ open: false }"
+            x-on:keyup.escape.window="open = false"
+            x-on:open-transfer-modal.window="open = true; const tf = $event.detail.transferee; fields.mobile.value = tf.mobile ? tf.mobile*1 : ''; fields.amount.value = tf.amount; tf.mobile && validate()"
+            x-show="open"
     >
-        <div class="header">
-            <div class="logo w-48" style="margin: 0 auto 40px;"><img src="images/wklogo_full.png"/></div>
-        </div><!-- header -->
-        <div class="close-btn absolute right-[20px] top-[30px] bg-[#eeeeee]" x-on:click="open = false">
-            <svg class="h-7 w-7" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                <path clip-rule="evenodd"
-                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                      fill-rule="evenodd"/>
-            </svg>
-        </div>
-        <div class="content">
-            <div class="wrap">
-                <div class="title text-center font-bold text-[21px] mb-[30px]">Transfer Load</div>
-                <div class="form">
-                    <form class="signup">
-                        <div class="mnumber form-element">
-                            <label class="text-[13px]">Mobile Number</label>
-                            <div class="relative">
+        <div
+                class="modal"
+                style="margin: 30px auto;"
+
+                x-on:click.outside="open = false"
+                x-on:submit.prevent="submit"
+        >
+            <div class="header">
+                <div class="logo w-48" style="margin: 0 auto 40px;"><img src="images/wklogo_full.png"/></div>
+            </div><!-- header -->
+            <div class="close-btn absolute right-[20px] top-[30px] bg-[#eeeeee]" x-on:click="open = false">
+                <svg class="h-7 w-7" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path clip-rule="evenodd"
+                          d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                          fill-rule="evenodd"/>
+                </svg>
+            </div>
+            <div class="content">
+                <div class="wrap">
+                    <div class="title text-center font-bold text-[21px] mb-[30px]">Transfer Load</div>
+                    <div class="form">
+                        <form class="signup">
+                            <div class="mnumber form-element">
+                                <label class="text-[13px]">Mobile Number</label>
+                                <div class="relative">
                                 <span class="absolute top-[7px] left-[8px]">0 <span
                                         class="text-[#d8d8d8]">|</span></span>
+                                    <input
+                                            :maxlength="fields.mobile.maxLength"
+                                            @blur="fields.mobile.validate(validationCallback)"
+                                            oninput="if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);"
+                                            placeholder="9xxxxxxxxx e.g. 9123456789" required
+                                            style="padding-left: 24px !important;"
+                                            type="number"
+                                            x-model="fields.mobile.value"
+                                    >
+                                    <p class="text-red-500 text-xs italic py-2" x-cloak><span
+                                            x-text="fields.mobile.errorMsg"></span></p>
+                                </div>
+                            </div>
+                            <div class="bday form-element">
+                                <label class="text-[13px]">Amount Credits</label>
                                 <input
-                                        :maxlength="fields.mobile.maxLength"
-                                        @blur="fields.mobile.validate(validationCallback)"
+                                        :maxlength="fields.amount.maxLength"
+                                        @blur="fields.amount.validate(validationCallback)"
                                         oninput="if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);"
-                                        placeholder="9xxxxxxxxx e.g. 9123456789" required
-                                        style="padding-left: 24px !important;"
+                                        placeholder="minimum 5 pesos e.g. 100"
+                                        required
                                         type="number"
-                                        x-model="fields.mobile.value"
+                                        x-model="fields.amount.value"
                                 >
                                 <p class="text-red-500 text-xs italic py-2" x-cloak><span
-                                        x-text="fields.mobile.errorMsg"></span></p>
+                                        x-text="fields.amount.errorMsg"></span></p>
+                                <!--                            <input placeholder="minimum 5 pesos e.g. 100" required type="number" x-model="enteredAmount">-->
                             </div>
-                        </div>
-                        <div class="bday form-element">
-                            <label class="text-[13px]">Amount Credits</label>
-                            <input
-                                    :maxlength="fields.amount.maxLength"
-                                    @blur="fields.amount.validate(validationCallback)"
-                                    oninput="if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);"
-                                    placeholder="minimum 5 pesos e.g. 100"
-                                    required
-                                    type="number"
-                                    x-model="fields.amount.value"
-                            >
-                            <p class="text-red-500 text-xs italic py-2" x-cloak><span
-                                    x-text="fields.amount.errorMsg"></span></p>
-                            <!--                            <input placeholder="minimum 5 pesos e.g. 100" required type="number" x-model="enteredAmount">-->
-                        </div>
-                        <div class="submit form-element mt-[30px]">
-                            <input :value="caption" class="enabled" type="submit">
-                        </div>
-                    </form>
+                            <div class="submit form-element mt-[30px]">
+                                <input :value="caption" class="enabled" type="submit">
+                            </div>
+                        </form>
+                    </div>
+                    <!-- if successful -->
+                    <div class="success-message text-center text-[#26580F] m-[15px]" x-show="transferSucceeded">
+                        <p x-text="message"></p>
+                    </div>
+                    <!-- if failed -->
+                    <div class="error-message text-center text-[#FF0000] m-[15px]" x-show="transferFailed">
+                        <p>Transfer failed! Please try again.</p>
+                    </div>
                 </div>
-                <!-- if successful -->
-                <div class="success-message text-center text-[#26580F] m-[15px]" x-show="transferSucceeded">
-                    <p x-text="message"></p>
-                </div>
-                <!-- if failed -->
-                <div class="error-message text-center text-[#FF0000] m-[15px]" x-show="transferFailed">
-                    <p>Transfer failed! Please try again.</p>
-                </div>
-            </div>
-        </div><!-- content -->
-    </div><!-- site-container -->
-    <div class="clear-both"></div>
-</div><!-- transfer modal dialog -->
+            </div><!-- content -->
+        </div><!-- site-container -->
+        <div class="clear-both"></div>
+    </div><!-- transfer modal dialog -->
+</div>
+
 <div
         class="modal-wrapper"
         x-data="{ open: false }"
@@ -1288,7 +1291,7 @@
         <div class="clear-both"></div>
         <div class="station-id" x-text="captions.station"></div>
         <div class="content relative top-[20px]" style="width: 100%; max-width: 600px;">
-            <!-- timer component starts-->
+            <!-- timer component start -->
             <div class="timer mb-[35px] bg-[#17A0DC] rounded grid grid-cols-4 gap-4 text-center p-4" x-data="airtime">
                 <div class="timer-element">
                     <div class="time" x-text="days"></div>
@@ -1307,13 +1310,16 @@
                     <div class="label text-white font-semibold text-sm">Seconds</div>
                 </div>
             </div>
-            <!-- timer component ends-->
+            <!-- timer component end-->
+            <!-- checkin component start -->
             <div x-data="checkin">
                 <div class="text-[#FF0000] text-center mb-[35px]" style="font-weight: bold !important;" x-text="captions.claimed" x-show="claimed"></div>
                 <div class="text-[#26580F] text-center mb-[35px]" x-show="unclaimed">
                     <a style="color: #26580F !important; font-weight: bold; cursor: pointer;" x-on:click="submit" x-text="captions.claim"></a>
                 </div>
             </div>
+            <!-- checkin component end -->
+            <!-- count-redeem-transfer components start -->
             <div class="nav clear-both grid grid-cols-3 gap-5 mb-[30px]">
                 <button x-data x-on:click="$dispatch('open-count-modal')">
                     <svg class="h-8 w-8" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -1337,6 +1343,8 @@
                     <span>Transfer Load</span>
                 </button>
             </div>
+            <!-- count-redeem-transfer components end -->
+            <!-- purchase components start -->
             <div x-data="purchase" x-show="canBuy">
                 <div class="font-bold text-[18px] title mb-[15px]" x-text="title"></div>
                 <div class="offers mb-[35px]">
@@ -1350,6 +1358,7 @@
                     </template>
                 </div>
             </div>
+            <!-- purchase components end -->
             <div class="start-browsing">
                 <a class="button block mt-[30px]" x-data x-on:click="$dispatch('open-landing-free-modal')">Start
                     Browsing
@@ -1422,7 +1431,7 @@
                     </svg>
                     <span>Redeem Voucher</span>
                 </button>
-                <button x-data x-on:click="$dispatch('open-transfer-modal')">
+                <button x-data x-on:click="$dispatch('open-transfer-modal', {transferee: {name: '', mobile: '', amount: ''}})">
                     <svg class="h-8 w-8" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                         <path clip-rule="evenodd"
                               d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm2 10a1 1 0 10-2 0v3a1 1 0 102 0v-3zm2-3a1 1 0 011 1v5a1 1 0 11-2 0v-5a1 1 0 011-1zm4-1a1 1 0 10-2 0v7a1 1 0 102 0V8z"
@@ -1432,25 +1441,15 @@
                 </button>
             </div>
             <div class="font-bold text-[18px] title mb-[15px]">Recent Transactions</div>
-            <div class="offers mb-[35px]">
-                <div class="product-offers grid grid-cols-2 gap-2">
-                    <div class="item"><span>₱5</span><span>09566937313</span>
-                        <span>Jack Sparrow</span></div>
-                    <button class="buynow" x-data x-on:click="$dispatch('open-tindera-purchase-modal')">Transfer Again
-                    </button>
-                </div>
-                <div class="product-offers grid grid-cols-2 gap-2">
-                    <div class="item"><span>₱10</span><span>09566258323</span>
-                        <span>Mon Astilla</span></div>
-                    <button class="buynow" x-data x-on:click="$dispatch('open-tindera-purchase-modal')">Transfer Again
-                    </button>
-                </div>
-                <div class="product-offers grid grid-cols-2 gap-2">
-                    <div class="item"><span>₱20</span><span>09155586699</span>
-                        <span>Lester Hurtado</span></div>
-                    <button class="buynow" x-data x-on:click="$dispatch('open-tindera-purchase-modal')">Transfer Again
-                    </button>
-                </div>
+            <div class="offers mb-[35px]" x-data="transfer">
+                <template x-for="transferee in recipients" :key=transferee.mobile>
+                    <div class="product-offers grid grid-cols-2 gap-2">
+                        <div class="item"><span x-text="'₱' + transferee.amount"></span><span x-text="transferee.mobile"></span>
+                            <span x-text="transferee.name"></span></div>
+                        <button class="buynow" x-data x-on:click="$dispatch('open-transfer-modal', {transferee})">Transfer Again
+                        </button>
+                    </div>
+                </template>
             </div>
             <div class="start-browsing">
                 <a class="button block mt-[30px]" style="background: #FE7D00;box-shadow: 0px 3px 0px #17A0DC;" x-data
@@ -1985,6 +1984,7 @@
             },
             transferSucceeded: null,
             transferFailed: null,
+            recipients: Alpine.store('wikonek').data.transfer.recipients,
             get caption() {
                 return'Go!!!'
             },
@@ -2011,6 +2011,10 @@
                 }
                 this.transferSucceeded = null;
                 this.transferFailed = null;
+            },
+            validate() {
+                this.fields.mobile.validate(validationCallback);
+                this.fields.amount.validate(validationCallback);
             },
             async api_transfer() {
                 console.log(`# data->transfer->api_transfer()`);
@@ -2587,6 +2591,12 @@
                 },
                 count: {
                     cumulative: 0,
+                },
+                transfer: {
+                    recipients: [
+                        {name: 'John Doe', mobile: '09181234567', amount: 100},
+                        {name: 'Jane Doe', mobile: '09187654321', amount: 500},
+                    ],
                 },
             },
             selectedProduct: {
