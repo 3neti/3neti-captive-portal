@@ -1368,8 +1368,6 @@
         <div class="header" style="max-width: 600px; margin: 5px auto;">
             <div class="logo float-left"><img class="wklogotindera" src="images/wklogo_full_tindera2.png"/></div>
             <div class="wallet-details float-right">
-                <span x-data x-text="$store.wikonek.user.name"></span>
-                <span x-data x-text="$store.wikonek.user.mobile"></span>
                 <div class="wallet-balance float-left text-right pr-2">
                     <div class="text-[17px] font-bold"><span>00:00:00:00</span></div>
                     <div class="text-[12px]">Remaining Time</div>
@@ -1383,7 +1381,7 @@
                         </svg>
                     </button>
                     <button class="bg-[#eeeeee] p-2 rounded-full" x-data
-                            x-on:click="$dispatch('open-tindera-profile-modal')">
+                            x-on:click="$dispatch('open-profile-modal')">
                         <svg class="h-7 w-7" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                             <path clip-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
                                   fill-rule="evenodd"/>
@@ -1393,23 +1391,23 @@
             </div>
         </div><!-- header -->
         <div class="clear-both"></div>
-        <div class="station-id">Station ID: QC-0001</div>
+        <div class="station-id" x-text="captions.station"></div>
         <div class="content relative top-[20px]" style="width: 100%; max-width: 600px;">
             <div class="timer mb-[35px] bg-[#FE7D00] rounded grid grid-cols-1 gap-4 text-center p-4">
                 <div class="timer-element">
-                    <div class="time">₱0</div>
-                    <div class="label text-white font-semibold text-sm">Wallet Balance</div>
+                    <div class="time">₱<span x-text="loadRemaining"></span></div>
+                    <div class="label text-white font-semibold text-sm" x-text="captions.balance"></div>
                 </div>
             </div>
-            <div class="text-[#FF0000] text-center mb-[35px]" style="font-weight: bold !important;">Please add funds to
-                your
-                wallet balance soon.
+            <div class="text-[#FF0000] text-center mb-[35px]" style="font-weight: bold !important;" x-text="captions.replenish" x-show="replenish">
             </div>
-            <div class="text-[#26580F] text-center mb-[35px]"><a
-                    style="color: #26580F !important; font-weight: bold; cursor: pointer;"
-                    x-data
-                    x-on:click="$dispatch('open-tindera-landing-free-modal')">Claim
-                FREE Internet</a></div>
+            <div x-data="checkin">
+                <div class="text-[#26580F] text-center mb-[35px]">
+                    <div class="text-[#FF0000] text-center mb-[35px]" style="font-weight: bold !important;" x-text="captions.claimed" x-show="claimed"></div>
+                    <a style="color: #26580F !important; font-weight: bold; cursor: pointer;" x-on:click="submit" x-show="unclaimed" x-text="captions.claim"></a>
+                </div>
+            </div>
+
             <div class="nav clear-both grid grid-cols-3 gap-5 mb-[30px]">
                 <button x-data x-on:click="$dispatch('open-tindera-count-modal')">
                     <svg class="h-8 w-8" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -1418,13 +1416,13 @@
                     </svg>
                     <span>Insert Coin</span>
                 </button>
-                <button x-data x-on:click="$dispatch('open-tindera-redeem-modal')">
+                <button x-data x-on:click="$dispatch('open-redeem-modal')">
                     <svg class="h-8 w-8" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                         <path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 100 4v2a2 2 0 01-2 2H4a2 2 0 01-2-2v-2a2 2 0 100-4V6z"/>
                     </svg>
                     <span>Redeem Voucher</span>
                 </button>
-                <button x-data x-on:click="$dispatch('open-tindera-transfer-modal')">
+                <button x-data x-on:click="$dispatch('open-transfer-modal')">
                     <svg class="h-8 w-8" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                         <path clip-rule="evenodd"
                               d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm2 10a1 1 0 10-2 0v3a1 1 0 102 0v-3zm2-3a1 1 0 011 1v5a1 1 0 11-2 0v-5a1 1 0 011-1zm4-1a1 1 0 10-2 0v7a1 1 0 102 0V8z"
@@ -1621,7 +1619,7 @@
                             Alpine.store('wikonek').user = obj.body.data.user;
                             console.log(`# - hydrating user`);
                             console.log(Alpine.store('wikonek').user, 'user');
-                            this.connection.status.backend = true;
+                            Alpine.store('wikonek').connection.status.backend = true;
                             this.$dispatch('notify', { content: `Registration successful!`, type: 'success'});
                         }
                         else if (obj.status === 422) {
@@ -1632,10 +1630,10 @@
                             this.$dispatch('notify', { content: `Registration failed!`, type: 'error'});
                         }
                         else if (obj.status === 503) {
-                            this.connection.status.backend = false;
+                            Alpine.store('wikonek').connection.status.backend = false;
                         }
                         else if (obj.status === 504) {
-                            this.connection.status.backend = false;
+                            Alpine.store('wikonek').connection.status.backend = false;
                         }
                     })
                     .catch((error) => {
@@ -1667,14 +1665,14 @@
                             console.log(`# - successful`);
                             this.token = obj.body;
                             console.log(this.token, 'token');
-                            this.connection.status.backend = true;
+                            Alpine.store('wikonek').connection.status.backend = true;
                             this.$dispatch('notify', { content: `Login successful!`, type: 'success'});
                         }
                         else if (obj.status === 503) {
-                            this.connection.status.backend = false;
+                            Alpine.store('wikonek').connection.status.backend = false;
                         }
                         else if (obj.status === 504) {
-                            this.connection.status.backend = false;
+                            Alpine.store('wikonek').connection.status.backend = false;
                         }
                         else {
                             console.log(`# - failure`);
@@ -1703,13 +1701,13 @@
                         if (obj.isOk === true) {
                             console.log(`# - associate successful`);
                             console.log(obj.body, 'json response');
-                            this.connection.status.backend = true;
+                            Alpine.store('wikonek').connection.status.backend = true;
                         }
                         else if (obj.status === 503) {
-                            this.connection.status.backend = false;
+                            Alpine.store('wikonek').connection.status.backend = false;
                         }
                         else if (obj.status === 504) {
-                            this.connection.status.backend = false;
+                            Alpine.store('wikonek').connection.status.backend = false;
                         }
                         else {
                             console.log(`# - displaying error message`);
@@ -1826,7 +1824,7 @@
                             console.log(`# - successful`);
                             console.log(`# - hydrating user`);
                             this.updateProfileSucceeded = true;
-                            this.connection.status.backend = true;
+                            Alpine.store('wikonek').connection.status.backend = true;
                         }
                         else if (obj.status === 401) {
                             console.log(`# - displaying error message`);
@@ -1835,10 +1833,10 @@
                             this.updateProfileFailed = true;
                         }
                         else if (obj.status === 503) {
-                            this.connection.status.backend = false;
+                            Alpine.store('wikonek').connection.status.backend = false;
                         }
                         else if (obj.status === 504) {
-                            this.connection.status.backend = false;
+                            Alpine.store('wikonek').connection.status.backend = false;
                         }
                     })
                     .catch((error) => {
@@ -1907,7 +1905,7 @@
                             console.log(`# - voucher redemption successful`);
                             redemption_data = obj.body.data;
                             console.log(redemption_data, 'redemption');
-                            this.connection.status.backend = true;
+                            Alpine.store('wikonek').connection.status.backend = true;
                         }
                         else if (obj.status === 404) {
                             console.log(`# - voucher code is invalid`);
@@ -1922,10 +1920,10 @@
                             this.fields.voucher.errorMsg = 'Voucher Code is already used.';
                         }
                         else if (obj.status === 503) {
-                            this.connection.status.backend = false;
+                            Alpine.store('wikonek').connection.status.backend = false;
                         }
                         else if (obj.status === 504) {
-                            this.connection.status.backend = false;
+                            Alpine.store('wikonek').connection.status.backend = false;
                         }
                         else {
                             console.log(`# - general exception`);
@@ -2027,7 +2025,7 @@
                         if (obj.isOk === true) {
                             console.log(`# - successful`);
                             console.log(`# - setting UI`);
-                            this.connection.status.backend = true;
+                            Alpine.store('wikonek').connection.status.backend = true;
                             Alpine.store('wikonek').api_ui();
                         }
                         else if (obj.status === 404) {
@@ -2043,10 +2041,10 @@
                             this.fields.amount.errorMsg = 'Insufficient funds.';
                         }
                         else if (obj.status === 503) {
-                            this.connection.status.backend = false;
+                            Alpine.store('wikonek').connection.status.backend = false;
                         }
                         else if (obj.status === 504) {
-                            this.connection.status.backend = false;
+                            Alpine.store('wikonek').connection.status.backend = false;
                         }
                         else {
                             console.log(`# - displaying error message`);
@@ -2065,7 +2063,7 @@
             },
             submit() {
                 if (this.canTransfer) {
-                    this.api_transfer();
+                    this.api_transfer().then(() => {Alpine.store('wikonek').api_ui()});
                 }
             }
         }))
@@ -2113,13 +2111,13 @@
                         if (obj.isOk === true) {
                             console.log(`# - purchase successful`);
                             Alpine.store('wikonek').data.purchase = purchase_data;
-                            this.connection.status.backend = true;
+                            Alpine.store('wikonek').connection.status.backend = true;
                         }
                         else if (obj.status === 503) {
-                            this.connection.status.backend = false;
+                            Alpine.store('wikonek').connection.status.backend = false;
                         }
                         else if (obj.status === 504) {
-                            this.connection.status.backend = false;
+                            Alpine.store('wikonek').connection.status.backend = false;
                         }
                         else {
                             console.error(`# - failed to purchase`);
@@ -2171,13 +2169,13 @@
                         if (obj.isOk === true) {
                             console.log(`# - checkin successful`);
                             checkin_data = obj.body.data;
-                            this.connection.status.backend = true;
+                            Alpine.store('wikonek').connection.status.backend = true;
                         }
                         else if (obj.status === 503) {
-                            this.connection.status.backend = false;
+                            Alpine.store('wikonek').connection.status.backend = false;
                         }
                         else if (obj.status === 504) {
-                            this.connection.status.backend = false;
+                            Alpine.store('wikonek').connection.status.backend = false;
                         }
                         else {
                             console.error(`# - failed to checkin`);
@@ -2447,13 +2445,13 @@
                     .then(obj => {
                         if (obj.isOk === true) {
                             console.log(`# - count successful`);
-                            this.connection.status.backend = true;
+                            Alpine.store('wikonek').connection.status.backend = true;
                         }
                         else if (obj.status === 503) {
-                            this.connection.status.backend = false;
+                            Alpine.store('wikonek').connection.status.backend = false;
                         }
                         else if (obj.status === 504) {
-                            this.connection.status.backend = false;
+                            Alpine.store('wikonek').connection.status.backend = false;
                         }
                         else {
                             console.error(`# - failed to count`);
@@ -2483,6 +2481,13 @@
                 station: 'Station ID: QC-0001',
                 claim: 'Claim your free internet.',
                 claimed: 'You already claimed your free internet.',
+                replenish: 'Please add funds to your wallet balance soon.',
+            },
+            get replenishThreshold() {
+                return Alpine.store('wikonek').config.replenishThreshold;
+            },
+            get replenish() {
+                return (Alpine.store('wikonek').data.ui.balance.load.amount * 1) < this.replenishThreshold;
             },
             get loadRemaining() {
                 return (Alpine.store('wikonek').data.ui.balance.load.amount * 1).toLocaleString();
@@ -2516,7 +2521,8 @@
                 },
                 coins: {
                     expiry: 30
-                }
+                },
+                replenishThreshold: 10000,
             },
             data: {
                 touch: {
