@@ -916,30 +916,34 @@
             x-on:click.outside="open = false"
             x-on:submit.prevent
     >
+        <div class="header">
+            <div class="logo w-48" style="margin: 0 auto 40px;"><img src="images/wklogo_full.png"/></div>
+        </div><!-- header -->
+        <div class="close-btn absolute right-[20px] top-[30px] bg-[#eeeeee]" x-on:click="open = false">
+            <svg class="h-7 w-7" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path clip-rule="evenodd"
+                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                      fill-rule="evenodd"/>
+            </svg>
+        </div>
         <div class="content">
             <div class="wrap">
-                <div
-                        x-show="open" x-transition
-                        x-on:click="open = false"
-                        class="relative min-h-screen flex items-center justify-center p-4"
+                <div style="text-align: center;"
+                     x-show="open" x-transition
+                     x-on:click="open = false"
                 >
                     <div
                             x-on:click.stop
                             x-trap.noscroll.inert="open"
-                            class="relative max-w-2xl w-full bg-white border border-black p-8 overflow-y-auto"
                     >
                         <!-- Title -->
-                        <p class="text-3xl font-medium">Purchase</p>
+                        <div class="title text-center font-bold text-[21px] mb-[30px]">Confirm Purchase</div>
                         <!-- Content -->
                         <p class="mt-2 text-gray-600" x-text="product.name"></p>
                         <!-- Buttons -->
-                        <div class="mt-8 flex space-x-2">
-                            <button type="button" x-on:click="submit; open = false" class="bg-white border border-black px-4 py-2">
-                                Confirm
-                            </button>
-                            <button type="button" x-on:click="open = false" class="bg-white border border-black px-4 py-2">
-                                Cancel
-                            </button>
+                        <div>
+                            <a class="button block mt-[30px]" x-data x-on:click="submit; open = false">Confirm</a>
+                            <a class="button block mt-[30px]" x-data x-on:click="open = false">Cancel</a>
                         </div>
                     </div>
                 </div>
@@ -1088,9 +1092,8 @@
             </div><!-- content -->
         </div><!-- site-container -->
         <div class="clear-both"></div>
-    </div><!-- transfer modal dialog -->
-</div>
-
+    </div>
+</div><!-- transfer modal dialog -->
 <div
         class="modal-wrapper"
         x-data="{ open: false }"
@@ -1289,7 +1292,7 @@
             </div>
         </div><!-- header -->
         <div class="clear-both"></div>
-        <div class="station-id" x-text="captions.station"></div>
+        <div class="station-id" x-text="'Station ID: ' + stationID"></div>
         <div class="content relative top-[20px]" style="width: 100%; max-width: 600px;">
             <!-- timer component start -->
             <div class="timer mb-[35px] bg-[#17A0DC] rounded grid grid-cols-4 gap-4 text-center p-4" x-data="airtime">
@@ -1359,14 +1362,14 @@
                 </div>
             </div>
             <!-- purchase components end -->
-            <div class="start-browsing">
-                <a class="button block mt-[30px]" x-data x-on:click="$dispatch('open-landing-free-modal')">Start
-                    Browsing
-                    for FREE</a>
-                <a class="button block mt-[30px]" x-data x-on:click="$dispatch('open-landing-credits-modal')">Start
-                    Browsing
-                    with Credits</a>
-            </div>
+<!--            <div class="start-browsing">-->
+<!--                <a class="button block mt-[30px]" x-data x-on:click="$dispatch('open-landing-free-modal')">Start-->
+<!--                    Browsing-->
+<!--                    for FREE</a>-->
+<!--                <a class="button block mt-[30px]" x-data x-on:click="$dispatch('open-landing-credits-modal')">Start-->
+<!--                    Browsing-->
+<!--                    with Credits</a>-->
+<!--            </div>-->
         </div><!-- content -->
     </div><!-- site-container -->
 </template>
@@ -1377,8 +1380,8 @@
         <div class="header" style="max-width: 600px; margin: 5px auto;">
             <div class="logo float-left"><img class="wklogotindera" src="images/wklogo_full_tindera2.png"/></div>
             <div class="wallet-details float-right">
-                <div class="wallet-balance float-left text-right pr-2">
-                    <div class="text-[17px] font-bold"><span>00:00:00:00</span></div>
+                <div class="wallet-balance float-left text-right pr-2" x-data="airtime">
+                    <div class="text-[17px] font-bold"><span x-text="timeRemaining"></span></div>
                     <div class="text-[12px]">Remaining Time</div>
                 </div>
                 <div class="header-buttons float-right">
@@ -1400,7 +1403,7 @@
             </div>
         </div><!-- header -->
         <div class="clear-both"></div>
-        <div class="station-id" x-text="captions.station"></div>
+        <div class="station-id" x-text="'Station ID: '+stationID"></div>
         <div class="content relative top-[20px]" style="width: 100%; max-width: 600px;">
             <div class="timer mb-[35px] bg-[#FE7D00] rounded grid grid-cols-1 gap-4 text-center p-4">
                 <div class="timer-element">
@@ -1416,7 +1419,6 @@
                     <a style="color: #26580F !important; font-weight: bold; cursor: pointer;" x-on:click="submit" x-show="unclaimed" x-text="captions.claim"></a>
                 </div>
             </div>
-
             <div class="nav clear-both grid grid-cols-3 gap-5 mb-[30px]">
                 <button x-data x-on:click="$dispatch('open-tindera-count-modal')">
                     <svg class="h-8 w-8" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -1442,21 +1444,21 @@
             </div>
             <div class="font-bold text-[18px] title mb-[15px]">Recent Transactions</div>
             <div class="offers mb-[35px]" x-data="transfer">
-                <template x-for="transferee in recipients" :key=transferee.mobile>
+                <template x-for="transferee in $store.wikonek.data.ui.recipients" :key=transferee.mobile>
                     <div class="product-offers grid grid-cols-2 gap-2">
-                        <div class="item"><span x-text="'₱' + transferee.amount"></span><span x-text="transferee.mobile"></span>
+                        <div class="item"><span x-text="'₱' + (+transferee.amount).toLocaleString()"></span><span x-text="transferee.mobile"></span>
                             <span x-text="transferee.name"></span></div>
                         <button class="buynow" x-data x-on:click="$dispatch('open-transfer-modal', {transferee})">Transfer Again
                         </button>
                     </div>
                 </template>
             </div>
-            <div class="start-browsing">
-                <a class="button block mt-[30px]" style="background: #FE7D00;box-shadow: 0px 3px 0px #17A0DC;" x-data
-                   x-on:click="$dispatch('open-tindera-landing-free-modal')">Start Browsing for FREE</a>
-                <a class="button block mt-[30px]" style="background: #FE7D00;box-shadow: 0px 3px 0px #17A0DC;" x-data
-                   x-on:click="$dispatch('open-tindera-landing-credits-modal')">Start Browsing with Credits</a>
-            </div>
+<!--            <div class="start-browsing">-->
+<!--                <a class="button block mt-[30px]" style="background: #FE7D00;box-shadow: 0px 3px 0px #17A0DC;" x-data-->
+<!--                   x-on:click="$dispatch('open-tindera-landing-free-modal')">Start Browsing for FREE</a>-->
+<!--                <a class="button block mt-[30px]" style="background: #FE7D00;box-shadow: 0px 3px 0px #17A0DC;" x-data-->
+<!--                   x-on:click="$dispatch('open-tindera-landing-credits-modal')">Start Browsing with Credits</a>-->
+<!--            </div>-->
         </div><!-- content -->
     </div><!-- site-container -->
 </template>
@@ -1984,7 +1986,9 @@
             },
             transferSucceeded: null,
             transferFailed: null,
-            recipients: Alpine.store('wikonek').data.transfer.recipients,
+            // recipients: Alpine.store('wikonek').data.transfer.recipients,
+            // recipients: Alpine.store('wikonek').user.recipients,
+            recipients: Alpine.store('wikonek').data.ui.recipients,
             get caption() {
                 return'Go!!!'
             },
@@ -2482,7 +2486,6 @@
         Alpine.data('dashboard', (mode) => ({
             captions: {
                 balance: 'Wallet Balance',
-                station: 'Station ID: QC-0001',
                 claim: 'Claim your free internet.',
                 claimed: 'You already claimed your free internet.',
                 replenish: 'Please add funds to your wallet balance soon.',
@@ -2495,6 +2498,9 @@
             },
             get loadRemaining() {
                 return (Alpine.store('wikonek').data.ui.balance.load.amount * 1).toLocaleString();
+            },
+            get stationID() {
+                return Alpine.store('wikonek').station.name;
             },
             redeem() {
                 this.$dispatch('open-redeem-modal');
@@ -2562,23 +2568,37 @@
                     balance: {
                         load: {
                             amount: 5370.00,
-                            units: '',
-                            get formatted() {
-                                return `${this.amount} ${this.units}`
-                            }
+                            units: 'pesos'
                         },
                         airtime: {
                             amount: 0,
-                            units: ''
+                            units: 'minutes'
                         }
                     },
+                    main: [
+
+                    ],
+                    navigation: {},
                     products: [
                         {
                             code: '1HIA',
                             name: 'UNLI Data 1 Hour',
                             rate: '₱ 5.00'
                         }
-                    ]
+                    ],
+                    profile: {
+                        name: null,
+                        mobile: null,
+                        address: null,
+                        birthdate: null,
+                    },
+                    transactions: [
+
+                    ],
+                    recipients: [
+                        {name: 'John Doe', mobile: '09181234567', amount: 100},
+                        {name: 'Jane Doe', mobile: '09187654321', amount: 500},
+                    ],
                 },
                 checkin: {
                     splash: '',
@@ -2593,10 +2613,7 @@
                     cumulative: 0,
                 },
                 transfer: {
-                    recipients: [
-                        {name: 'John Doe', mobile: '09181234567', amount: 100},
-                        {name: 'Jane Doe', mobile: '09187654321', amount: 500},
-                    ],
+
                 },
             },
             selectedProduct: {
