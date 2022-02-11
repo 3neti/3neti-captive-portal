@@ -1995,23 +1995,11 @@
                         return purchase_data;
                     })
                     .then(purchase_data => {
-
                         if (purchase_data.airtime > 0) {
-                            Alpine.store('wikonek').api_consume(purchase_data.airtime);
-                            Alpine.store('wikonek').api_ui();
+                            Alpine.store('wikonek').api_consume(purchase_data.airtime)
+                                .then(() => Alpine.store('wikonek').api_ui());
                         }
                     })
-                // .then(response => response.json())
-                // .then(data => {
-                //     Alpine.store('wikonek').data.setPurchase(data.data)
-                // })
-                // .then(() => {
-                //     Alpine.store('wikonek').consumption = Alpine.store('wikonek').purchased.airtime
-                //     Alpine.store('wikonek').user = Alpine.store('wikonek').purchased.user
-                // })
-                // .then(() => {
-                //     Alpine.store('wikonek').api_ui();
-                // })
             },
             confirm(code) {
                 Alpine.store('wikonek').selectedProduct = this.products.find(n => n.code == code);
@@ -2038,29 +2026,33 @@
                 const device = Alpine.store('wikonek').data.touch.device.identifier;
                 const station = Alpine.store('wikonek').station.identifier;
                 const url = apiEndPoint+`/checkin/${device}/${station}`;
-                const authorization = Alpine.store('wikonek').authorization;
-                console.log(`** api_checkin() -> ${url}`);
                 await fetch(url, {
                     method: 'POST',
                     headers: {"Authorization": "Bearer "+ Alpine.store('wikonek').token}
                 })
                     .then(response =>  response.json().then(data => ({status: response.status, body: data, isOk: response.ok})))
                     .then(obj => {
+                        let checkin_data = {airtime: 0};
                         if (obj.isOk === true) {
-                            console.log(`# - successful`);
-                            Alpine.store('wikonek').data.checkin = obj.body.data;
-                            console.log(Alpine.store('wikonek').data.checkin, 'checkin');
+                            console.log(`# - checkin successful`);
+                            checkin_data = obj.body.data;
                         }
                         else {
-                            console.log(`# - displaying error message`);
+                            console.error(`# - failed to checkin`);
+                        }
+
+                        return checkin_data;
+                    })
+                    .then(checkin_data => {
+                        console.log('storing checkin data');
+                        Alpine.store('wikonek').data.checkin = checkin_data;
+                        if (checkin_data.airtime > 0) {
+                            console.log('consuming checkin data');
+                            Alpine.store('wikonek').api_consume(checkin_data.airtime)
+                                .then(() => Alpine.store('wikonek').api_ui());
                         }
                     })
-                    .catch((error) => {
-                        console.log('# - error');
-                    })
-                    .finally(() => {
-                        console.log('# - finally');
-                    })
+
                 // .then(response => response.json())
                 // .then(data => {
                 //     Alpine.store('wikonek').data.setCheckin(data.data)
@@ -2151,10 +2143,9 @@
                 this.api_ctime();
             },
             api_ctime() {
-                console.log(`# data->registration->api_ctime()`);
+                console.log(`# data->airtime->api_ctime()`);
                 const url = '/pesofi_ctime/';
                 const interval = 1000;
-                console.log(`# - fetching ${url}`);
                 this.handle = setInterval(() => {
                     fetch(url, {method: 'GET'})
                         .then(response =>  response.text().then(data => ({status: response.status, body: data, isOk: response.ok})))
@@ -2170,20 +2161,10 @@
                                 console.log(`# - something else is wrong`);
                             }
                         })
-                        .catch((error) => {
-
-                        })
-                        .finally(() => {
-
-                        })
-                        // .then(response => response.text())
-                        // .then(str => {
-                        //     this.code = parseRemainingTime(str);
-                        //     // Alpine.store('wikonek').data.session.airtime.secondsRemaining = this.code;
-                        // })
                 }, interval);
             },
             reset() {
+                console.log(`# data->airtime->reset()`);
                 clearTimeout(this.handle);
                 this.api_ctime();
             }
@@ -2346,7 +2327,9 @@
                 console.log('* store->wikonek->init()');
                 this.registered = false;
                 this.loadCustomValidations();
-                this.api_touch().then(() => this.api_station()).finally(() => {this.api_ui()});
+                this.api_touch()
+                    .then(() => this.api_station())
+                    .finally(() => {this.api_ui()});
             },
             loadCustomValidations() {
                 console.log('** store->wikonek->loadCustomValidations()');
@@ -2389,36 +2372,26 @@
             },
             async api_touch() {
                 console.log('* store->wikonek->api_touch()');
-                const device = this.config.macAddress;
+                const device = this.config.macAddress; //TODO: change this
                 const device_name = 'mobile';
                 const url = apiEndPoint+`/touch/${device}/${device_name}`;
-                console.log(`** api_touch() -> ${url}`)
                 await fetch(url, {method: 'POST'})
                     .then(response =>  response.json().then(data => ({status: response.status, body: data, isOk: response.ok})))
                     .then(obj => {
                         if (obj.isOk === true) {
-                            console.log(`* - successful`);
+                            console.log(`* - touch base successful`);
                             this.data.touch = obj.body.data;
-                            console.log(`* - touch`);
                             console.log(this.data.touch, 'touch');
                         }
                         else {
-                            console.log('* - failure');
+                            console.error('* - failed to touch base');
                         }
-                    })
-                    .catch((error) => {
-                        console.log(error, '# - error');
-                    })
-                    .finally(() => {
-                        console.log('# - finally');
-                        // this.registered = this.hasCompletedProfile;
                     })
             },
             async api_station() {
                 console.log('* store->wikonek->api_station()');
                 const station = this.config.stationID;
                 const url = apiEndPoint+`/stations/${station}`;
-                console.log(`** api_station() -> ${url}`)
                 await fetch(url, {
                     method: 'GET',
                     headers: {"Authorization": "Bearer "+ Alpine.store('wikonek').token}
@@ -2426,28 +2399,18 @@
                     .then(response =>  response.json().then(data => ({status: response.status, body: data, isOk: response.ok})))
                     .then(obj => {
                         if (obj.isOk === true) {
-                            console.log(`# - successful`);
+                            console.log('# - station information retrieval successful');
                             this.data.station = obj.body.data;
-                            console.log('* - station');
-                            console.log(this.station, 'station');
-                            console.log('* - manager');
-                            console.log(this.manager, 'manager');
+                            console.log(this.data.station, 'this.data.station');
                         }
                         else {
-                            console.log(`# - failure`);
+                            console.error('# - failed to retrieve station information');
                         }
-                    })
-                    .catch((error) => {
-                        console.log('# - error');
-                    })
-                    .finally(() => {
-                        console.log('# - finally');
                     })
             },
             async api_ui() {
                 console.log('* store->wikonek->api_ui()');
                 const url = apiEndPoint+`/ui`
-                console.log(`** api_ui() -> ${url}`)
                 await fetch(url, {
                     method: 'GET',
                     headers: {"Authorization": "Bearer "+ Alpine.store('wikonek').token}
@@ -2455,24 +2418,14 @@
                     .then(response =>  response.json().then(data => ({status: response.status, body: data, isOk: response.ok})))
                     .then(obj => {
                         if (obj.isOk === true) {
-                            console.log(`# - successful`);
+                            console.log('# - ui retrieval successful');
                             this.data.ui = obj.body.data;
                             console.log(this.data.ui, 'ui');
                         }
                         else {
-                            console.log(`# - failure`);
+                            console.error(`# - failure`);
                         }
                     })
-                    .catch((error) => {
-                        console.log('# - error');
-                    })
-                    .finally(() => {
-                        console.log('# - finally');
-                    })
-                // .then(data => {
-                //     // this.data.ui = data.data
-                //     this.data.setUI(data.data)
-                // })
             },
             async api_consume(minutes = -1, all = false) {
                 console.log('* store->wikonek->api_consume()');
