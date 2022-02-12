@@ -514,7 +514,7 @@
         </div>
     </template>
 </div>
-<!-- SIGN UP PAGE -->
+<!-- REGISTRATION PAGE -->
 <div class="site-container wrap p-4" x-data="registration" x-show="unregistered">
     <div class="header">
         <div class="logo w-48" style="margin: 0 auto 40px;"><img src="images/wklogo_full.png"/></div>
@@ -579,7 +579,7 @@
                             <textarea
                                     :maxlength="fields.address.maxLength"
                                     @blur="fields.address.validate(validationCallback)"
-                                    placeholder="By submitting your data, you agree to the privacy policy stated in wikonek.ph/privacy."
+                                    placeholder="88 Malakas St., Barangay Pinyahan, Quezon City 1100"
                                     required
                                     x-model="fields.address.value"
                             >
@@ -1005,7 +1005,7 @@
                 </div>
                 <!-- if failed -->
                 <div class="error-message text-center text-[#FF0000] m-[15px]" x-show="redemptionFailed">
-                    <p>Voucher redemption failed! Please try again.</p>
+                    <p>Voucher redemption failed! Please input a valid code..</p>
                 </div>
             </div>
         </div><!-- content -->
@@ -1264,8 +1264,10 @@
 </div><!-- landing page modal COUNT -->
 <!-- DASHBOARD TINDERA MODALS -->
 
-<!-- DASHBOARD PAGE -->
-<template x-data="dashboard('user')" x-if="$store.wikonek.userMode">
+<!-- DASHBOARD -->
+<div x-data x-show="$store.wikonek.registered">
+<!--  USER -->
+    <template x-data="dashboard('user')" x-if="$store.wikonek.userMode">
     <div class="site-container wrap p-4" id="dashboard-page">
         <div class="header" style="max-width: 600px; margin: 5px auto;">
             <div class="logo float-left"><img class="wklogo" src="images/wklogo_full.png"/></div>
@@ -1373,9 +1375,8 @@
         </div><!-- content -->
     </div><!-- site-container -->
 </template>
-
-<!-- DASHBOARD PAGE TINDERA -->
-<template x-data="dashboard('tindera')" x-if="$store.wikonek.tinderaMode">
+<!-- TINDERA -->
+    <template x-data="dashboard('tindera')" x-if="$store.wikonek.tinderaMode">
     <div class="site-container wrap p-4" id="dashboard-page-tindera">
         <div class="header" style="max-width: 600px; margin: 5px auto;">
             <div class="logo float-left"><img class="wklogotindera" src="images/wklogo_full_tindera2.png"/></div>
@@ -1462,6 +1463,8 @@
         </div><!-- content -->
     </div><!-- site-container -->
 </template>
+</div>
+
 <!-- footer scripts start -->
 <script>
     const backendIPAddress = `206.189.90.222`;
@@ -1470,7 +1473,10 @@
     const splashURL = `http://${backendIPAddress}/splash`; // image of franchisee
     const lguURL = `http://${backendIPAddress}/lgu`; // image of government sponsor
     const landingURL = `http://${backendIPAddress}/landing`;
-    const dummyClientMACAddress = '20:6d:b6:6c:d5:37';
+    const dummyClientMACAddress = '31:88:05:53:76:63';
+    const demoClientMACAddress = '37:60:06:07:73:40';
+    const dummyStationID = 'virtual';
+    const stationID = `$gatewaymac`;
 
     document.addEventListener('alpine:init', () => {
         Alpine.data('ingress', () => ({
@@ -1725,8 +1731,8 @@
                 console.log('# data->registration->submit()');
                 this.loading = true;
                 if (this.wantToRegister) {
-                    console.log('# - executing api_register');
-                    this.api_register();
+                    console.log(`# - executing api_register then Alpine.store('wikonek').api_ui()`);
+                    this.api_register().then(() => Alpine.store('wikonek').api_ui());
                 }
                 else if (this.wantToLogin) {
                     console.log('# - executing api_login');
@@ -1795,7 +1801,10 @@
             },
             get number() {
                 const mobile = Alpine.store('wikonek').user.mobile;
-                return mobile.substr(3);
+                if (mobile && mobile.length>3) {
+                    return mobile.substr(3);
+                }
+                return '';
             },
             canUpdate() {
                 return this.fields.old_pin.isValid && this.fields.pin.isValid && this.fields.pin_confirmation.isValid;
@@ -2196,6 +2205,7 @@
                         Alpine.store('wikonek').data.checkin = checkin_data;
                         if (checkin_data.airtime > 0) {
                             console.log('consuming checkin airtime');
+                            Alpine.store('wikonek').api_touch();
                             Alpine.store('wikonek').api_consume(checkin_data.airtime)
                                 .then(() => Alpine.store('wikonek').api_ui());
                         }
@@ -2487,7 +2497,7 @@
             captions: {
                 balance: 'Wallet Balance',
                 claim: 'Claim your free internet.',
-                claimed: 'You already claimed your free internet.',
+                claimed: 'You already claimed your FREE internet for the days',
                 replenish: 'Please add funds to your wallet balance soon.',
             },
             get replenishThreshold() {
@@ -2510,6 +2520,11 @@
             },
         }))
         Alpine.store('wikonek', {
+            registered: false,
+            dayPassClaimed: true,
+            get unregistered() {
+                return !this.registered;
+            },
             connection: {
                 status: {
                     get network() {
@@ -2525,7 +2540,9 @@
                 pinSize: 4,
                 // macAddress: '10:6d:b6:6c:d5:37'
                 macAddress: dummyClientMACAddress,
-                stationID: '803F5D9D9419',
+                deviceName: 'mobile', // TODO: make this dynamically assigned
+                stationID: stationID,
+                // stationID: dummyStationID, // TODO: make this dynamically assigned
                 flash: {
                     timeout: 10 * 1000,
                 },
@@ -2536,7 +2553,9 @@
             },
             data: {
                 touch: {
-                    day_pass_today: null,
+                    day_pass_today: {
+                        availed: 0
+                    },
                     device: {
                         user: {
                             mobile: '',
@@ -2633,9 +2652,6 @@
             set user(value) {
                 this.device.user = value;
             },
-            get registered() {
-                return this.data.touch && this.device && this.user && this.user.mobile;
-            },
             get station() {
                 return this.data.station;
             },
@@ -2660,15 +2676,15 @@
             get wallet() {
                 return this.data.ui.balance
             },
-            get dayPassClaimed() {
-                let retval = false;
-                if (this.data.touch.day_pass_today != null) {
-                    if (+this.data.touch.day_pass_today.availed > 0) {
-                        retval = true;
-                    }
-                }
-                return retval;
-            },
+            // get dayPassClaimed() {
+            //     let retval = false;
+            //     if (this.data.touch.day_pass_today != null) {
+            //         if (+this.data.touch.day_pass_today.availed > 0) {
+            //             retval = true;
+            //         }
+            //     }
+            //     return retval;
+            // },
             get dayPass() {
                 return this.data.checkin.airtime
             },
@@ -2692,6 +2708,14 @@
                 else {
                     this.config.macAddress = mac;
                     console.log(`** setting the client MAC address to ${this.config.macAddress}`);
+                }
+
+                if (stationID.indexOf('gatewaymac') > 0) {
+                    this.config.stationID = dummyStationID;
+                    console.log(`** setting the station ID to ${this.config.stationID}`);
+                }
+                else {
+                    console.log(`** using ${this.config.stationID} as default value for the station ID`);
                 }
             },
             report() {
@@ -2751,9 +2775,8 @@
             },
             async api_touch() {
                 console.log('* store->wikonek->api_touch()');
-                const device = this.config.macAddress; //TODO: change this
-
-                const device_name = 'mobile';
+                const device = this.config.macAddress;
+                const device_name = this.config.deviceName;
                 const url = apiEndPoint+`/touch/${device}/${device_name}`;
                 await fetch(url, {method: 'POST'})
                     .then(response =>  response.json().then(data => ({status: response.status, body: data, isOk: response.ok})))
@@ -2761,6 +2784,8 @@
                         if (obj.isOk === true) {
                             console.log(`* - touch base successful`);
                             this.data.touch = obj.body.data;
+                            this.dayPassClaimed =
+                                this.data.touch.day_pass_today && (+this.data.touch.day_pass_today.availed > 0)
                             console.log(this.data.touch, 'touch');
                             this.connection.status.backend = true;
                         }
@@ -2814,6 +2839,7 @@
                         if (obj.isOk === true) {
                             console.log('# - ui retrieval successful');
                             this.data.ui = obj.body.data;
+                            this.registered = !isEmpty(this.data.ui.profile.mobile);
                             console.log(this.data.ui, 'ui');
                             this.connection.status.backend = true;
                         }
