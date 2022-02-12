@@ -1443,16 +1443,18 @@
                     <span>Transfer Load</span>
                 </button>
             </div>
-            <div class="font-bold text-[18px] title mb-[15px]">Recent Transactions</div>
-            <div class="offers mb-[35px]" x-data="transfer">
-                <template x-for="transferee in $store.wikonek.data.ui.recipients" :key=transferee.mobile>
-                    <div class="product-offers grid grid-cols-2 gap-2">
-                        <div class="item"><span x-text="'₱' + (+transferee.amount).toLocaleString()"></span><span x-text="transferee.mobile"></span>
-                            <span x-text="transferee.name"></span></div>
-                        <button class="buynow" x-data x-on:click="$dispatch('open-transfer-modal', {transferee})">Transfer Again
-                        </button>
-                    </div>
-                </template>
+            <div x-data="transfer" x-show="$store.wikonek.data.ui.recipients && $store.wikonek.data.ui.recipients.length>0">
+                <div class="font-bold text-[18px] title mb-[15px]">Recent Transactions</div>
+                <div class="offers mb-[35px]" >
+                    <template x-for="transferee in $store.wikonek.data.ui.recipients" :key=transferee.mobile>
+                        <div class="product-offers grid grid-cols-2 gap-2">
+                            <div class="item"><span x-text="'₱' + (+transferee.amount).toLocaleString()"></span><span x-text="transferee.mobile"></span>
+                                <span x-text="transferee.name"></span></div>
+                            <button class="buynow" x-data x-on:click="$dispatch('open-transfer-modal', {transferee})">Transfer Again
+                            </button>
+                        </div>
+                    </template>
+                </div>
             </div>
 <!--            <div class="start-browsing">-->
 <!--                <a class="button block mt-[30px]" style="background: #FE7D00;box-shadow: 0px 3px 0px #17A0DC;" x-data-->
@@ -1686,12 +1688,6 @@
                             this.$dispatch('notify', { content: `Login failed!`, type: 'error'});
                         }
                     })
-                    .catch((error) => {
-                        console.log('# - error');
-                    })
-                    .finally(() => {
-                        console.log('# - finally');
-                    })
                 ;
             },
             async api_associate() {
@@ -1708,6 +1704,7 @@
                         if (obj.isOk === true) {
                             console.log(`# - associate successful`);
                             console.log(obj.body, 'json response');
+                            Alpine.store('wikonek').user = obj.body.data.user;
                             Alpine.store('wikonek').connection.status.backend = true;
                         }
                         else if (obj.status === 503) {
@@ -1720,27 +1717,28 @@
                             console.log(`# - displaying error message`);
                         }
                     })
-                    .catch((error) => {
-                        console.log('# - catching error');
-                    })
-                    .finally(() => {
-                        console.log('# - finally');
-                    })
             },
             submit() {
                 console.log('# data->registration->submit()');
                 this.loading = true;
                 if (this.wantToRegister) {
                     console.log(`# - executing api_register then Alpine.store('wikonek').api_ui()`);
-                    this.api_register().then(() => Alpine.store('wikonek').api_ui());
+                    this.api_register()
+                        .then(() => Alpine.store('wikonek').api_ui());
                 }
                 else if (this.wantToLogin) {
                     console.log('# - executing api_login');
-                    this.api_login().then(() => {
-                        if (isEmpty(Alpine.store('wikonek').user.mobile))
-                            console.log('# - executing api_associate');
-                        this.api_associate();
-                    });
+                    this.api_login()
+                        .then(() => {
+                            if (isEmpty(Alpine.store('wikonek').user.mobile)) {
+                                console.log('# - executing api_associate');
+                                this.api_associate();
+                            }
+                    })
+                        .then(() => {
+                            // Alpine.store('wikonek').registered = true;
+                            Alpine.store('wikonek').api_ui();
+                        })
                 }
                 this.loading = false;
             },
@@ -2497,7 +2495,7 @@
             captions: {
                 balance: 'Wallet Balance',
                 claim: 'Claim your free internet.',
-                claimed: 'You already claimed your FREE internet for the days',
+                claimed: 'You already claimed your FREE internet for the day',
                 replenish: 'Please add funds to your wallet balance soon.',
             },
             get replenishThreshold() {
@@ -2522,9 +2520,9 @@
         Alpine.store('wikonek', {
             registered: false,
             dayPassClaimed: true,
-            get unregistered() {
-                return !this.registered;
-            },
+            // get unregistered() {
+            //     return !this.registered;
+            // },
             connection: {
                 status: {
                     get network() {
@@ -2615,8 +2613,8 @@
 
                     ],
                     recipients: [
-                        {name: 'John Doe', mobile: '09181234567', amount: 100},
-                        {name: 'Jane Doe', mobile: '09187654321', amount: 500},
+                        // {name: 'John Doe', mobile: '09181234567', amount: 100},
+                        // {name: 'Jane Doe', mobile: '09187654321', amount: 500},
                     ],
                 },
                 checkin: {
@@ -2839,7 +2837,7 @@
                         if (obj.isOk === true) {
                             console.log('# - ui retrieval successful');
                             this.data.ui = obj.body.data;
-                            this.registered = !isEmpty(this.data.ui.profile.mobile);
+                            this.registered = !isEmpty(this.data.ui.profile.mobile) || !isEmpty(this.user.mobile);
                             console.log(this.data.ui, 'ui');
                             this.connection.status.backend = true;
                         }
