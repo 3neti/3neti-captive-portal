@@ -533,7 +533,7 @@
                                     :maxlength="fields.mobile.maxLength"
                                     @blur="fields.mobile.validate(validationCallback)"
                                     oninput="if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);"
-                                    placeholder="9xxxxxxxxx e.g. 9123456789"
+                                    :placeholder="$store.wikonek.macAddress"
                                     required
                                     style="padding-left: 45px !important;"
                                     type="number"
@@ -1017,7 +1017,7 @@
             class="modal-wrapper"
             x-data="{ open: false }"
             x-on:keyup.escape.window="open = false"
-            x-on:open-transfer-modal.window="open = true; const tf = $event.detail.transferee; fields.mobile.value = tf.mobile ? tf.mobile*1 : ''; fields.amount.value = tf.amount; tf.mobile && validate()"
+            x-on:open-transfer-modal.window="open = true; const tf = $event.detail.transferee; fields.mobile.value = tf.mobile ? ((tf.mobile + '').substr(2))*1 : ''; fields.amount.value = tf.amount; tf.mobile && validate()"
             x-show="open"
     >
         <div
@@ -1076,7 +1076,7 @@
                                 <!--                            <input placeholder="minimum 5 pesos e.g. 100" required type="number" x-model="enteredAmount">-->
                             </div>
                             <div class="submit form-element mt-[30px]">
-                                <input :value="caption" class="enabled" type="submit">
+                                <input :value="caption" class="enabled" type="submit" x-show="!transferSucceeded">>
                             </div>
                         </form>
                     </div>
@@ -1421,7 +1421,7 @@
                 </div>
             </div>
             <div class="nav clear-both grid grid-cols-3 gap-5 mb-[30px]">
-                <button x-data x-on:click="$dispatch('open-tindera-count-modal')">
+                <button x-data x-on:click="$dispatch('open-count-modal')">
                     <svg class="h-8 w-8" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                         <path d="M8.707 7.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l2-2a1 1 0 00-1.414-1.414L11 7.586V3a1 1 0 10-2 0v4.586l-.293-.293z"/>
                         <path d="M3 5a2 2 0 012-2h1a1 1 0 010 2H5v7h2l1 2h4l1-2h2V5h-1a1 1 0 110-2h1a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"/>
@@ -1475,8 +1475,8 @@
     const splashURL = `http://${backendIPAddress}/splash`; // image of franchisee
     const lguURL = `http://${backendIPAddress}/lgu`; // image of government sponsor
     const landingURL = `http://${backendIPAddress}/landing`;
-    const dummyClientMACAddress = '31:88:05:53:76:63';
-    const demoClientMACAddress = '37:60:06:07:73:40';
+    const dummyClientMACAddress = '31:88:05:53:76:63'; //non-existenet macAddress in production
+    const demoClientMACAddress = '37:60:06:07:73:40'; //non-existenet macAddress in testing
     const dummyStationID = 'virtual';
     const stationID = `$gatewaymac`;
 
@@ -1692,7 +1692,7 @@
             },
             async api_associate() {
                 console.log(`# data->registration->api_associate()`);
-                const device = Alpine.store('wikonek').config.macAddress;
+                const device = Alpine.store('wikonek').macAddress;
                 const url = apiEndPoint+`/associate/${device}`;
                 console.log(`# - fetching ${url}`);
                 await fetch(url, {
@@ -1732,13 +1732,14 @@
                         .then(() => {
                             if (isEmpty(Alpine.store('wikonek').user.mobile)) {
                                 console.log('# - executing api_associate');
-                                this.api_associate();
+                                this.api_associate()
+                                    .then(() => {
+                                        console.log('# - executing api_touch() then api_ui()');
+                                        Alpine.store('wikonek').api_touch()
+                                            .then(() => Alpine.store('wikonek').api_ui());
+                                })
                             }
                     })
-                        .then(() => {
-                            // Alpine.store('wikonek').registered = true;
-                            Alpine.store('wikonek').api_ui();
-                        })
                 }
                 this.loading = false;
             },
@@ -2079,6 +2080,7 @@
             submit() {
                 if (this.canTransfer) {
                     this.api_transfer().then(() => {Alpine.store('wikonek').api_ui()});
+                    window.scrollTo(0,0);
                 }
             }
         }))
@@ -2145,7 +2147,7 @@
                     .then(purchase_data => {
                         if (purchase_data.airtime > 0) {
                             Alpine.store('wikonek').api_consume(purchase_data.airtime)
-                                .then(() => Alpine.store('wikonek').api_ui());
+                                .then(() => {Alpine.store('wikonek').api_ui(); window.scrollTo(0,0)});
                         }
                     })
             },
@@ -2249,7 +2251,8 @@
                         return parseProductRate(Alpine.store('wikonek').data.purchase.product.rate);
                     case 'count':
                         let airtime = null;
-                        switch (Alpine.store('wikonek').counted) {
+                        switch (Alpine.store('wikonek').data.count.cumulative) {
+                            // switch (Alpine.store('wikonek').counted) {
                             case '1': airtime = 10; break;
                             case '2': airtime = 20; break;
                             case '3': airtime = 30; break;
@@ -2486,6 +2489,8 @@
                             // Alpine.store('wikonek').done();
                             // Alpine.store('wikonek').counted = this.cumulative;
                             Alpine.store('wikonek').data.count.cumulative = this.cumulative;
+                            this.cumulative = 0;
+                            this.ticks = 0;
                             this.$dispatch('open-landing-count-modal');
                         }
                     })
@@ -2505,6 +2510,7 @@
                 return (Alpine.store('wikonek').data.ui.balance.load.amount * 1) < this.replenishThreshold;
             },
             get loadRemaining() {
+                // return (Alpine.store('wikonek').load * 1).toLocaleString();
                 return (Alpine.store('wikonek').data.ui.balance.load.amount * 1).toLocaleString();
             },
             get stationID() {
@@ -2520,34 +2526,31 @@
         Alpine.store('wikonek', {
             registered: false,
             dayPassClaimed: true,
-            // get unregistered() {
-            //     return !this.registered;
-            // },
             connection: {
                 status: {
                     get network() {
                         return navigator.onLine === true;
                     },
                     get gateway() {
-                        return (dummyClientMACAddress !== Alpine.store('wikonek').config.macAddress);
+                        return (dummyClientMACAddress !== Alpine.store('wikonek').macAddress);
                     },
                     backend: false,
                 },
             },
             config: {
+                environment: 'testing',
                 pinSize: 4,
-                // macAddress: '10:6d:b6:6c:d5:37'
-                macAddress: dummyClientMACAddress,
                 deviceName: 'mobile', // TODO: make this dynamically assigned
-                stationID: stationID,
-                // stationID: dummyStationID, // TODO: make this dynamically assigned
                 flash: {
                     timeout: 10 * 1000,
                 },
                 coins: {
                     expiry: 30
                 },
-                replenishThreshold: 10000,
+                replenishThreshold: 5000,
+                ui: {
+                    refreshRate: 60000
+                },
             },
             data: {
                 touch: {
@@ -2638,6 +2641,25 @@
                 name: 'UNLI Data 1 Hour',
                 rate: '₱ 5.00'
             },
+            get environment() {
+                return this.config.environment;
+            },
+            get stationID() {
+                const gatewaymac = `$gatewaymac`;
+
+                return (gatewaymac.indexOf('gatewaymac') > 0)
+                    ? dummyStationID
+                    :`$gatewaymac`;
+            },
+            get macAddress() {
+                let mac = `$clientmac`;
+
+                return (mac !== "\$clientmac")
+                    ? mac
+                    : (this.environment == 'production')
+                        ? dummyClientMACAddress
+                        : demoClientMACAddress;
+            },
             get token() {
                 return this.data.touch.token;
             },
@@ -2674,15 +2696,6 @@
             get wallet() {
                 return this.data.ui.balance
             },
-            // get dayPassClaimed() {
-            //     let retval = false;
-            //     if (this.data.touch.day_pass_today != null) {
-            //         if (+this.data.touch.day_pass_today.availed > 0) {
-            //             retval = true;
-            //         }
-            //     }
-            //     return retval;
-            // },
             get dayPass() {
                 return this.data.checkin.airtime
             },
@@ -2697,23 +2710,6 @@
                 }
                 else {
                     console.log(`** using ${this.config.coins.expiry} seconds as default value for queue time`);
-                }
-
-                const mac = `$clientmac`;
-                if (mac === "\$clientmac") {
-                    console.log(`** using ${this.config.macAddress} as default value for the  MAC address`);
-                }
-                else {
-                    this.config.macAddress = mac;
-                    console.log(`** setting the client MAC address to ${this.config.macAddress}`);
-                }
-
-                if (stationID.indexOf('gatewaymac') > 0) {
-                    this.config.stationID = dummyStationID;
-                    console.log(`** setting the station ID to ${this.config.stationID}`);
-                }
-                else {
-                    console.log(`** using ${this.config.stationID} as default value for the station ID`);
                 }
             },
             report() {
@@ -2731,6 +2727,8 @@
                     .then(() => this.api_station())
                     .then(() => this.api_ui())
                     .finally(() => {this.report()});
+
+                setInterval( () => this.api_ui(), this.config.ui.refreshRate)
             },
             loadCustomValidations() {
                 console.log('** store->wikonek->loadCustomValidations()');
@@ -2773,7 +2771,7 @@
             },
             async api_touch() {
                 console.log('* store->wikonek->api_touch()');
-                const device = this.config.macAddress;
+                const device = this.macAddress;
                 const device_name = this.config.deviceName;
                 const url = apiEndPoint+`/touch/${device}/${device_name}`;
                 await fetch(url, {method: 'POST'})
@@ -2800,7 +2798,7 @@
             },
             async api_station() {
                 console.log('* store->wikonek->api_station()');
-                const station = this.config.stationID;
+                const station = this.stationID;
                 const url = apiEndPoint+`/stations/${station}`;
                 await fetch(url, {
                     method: 'GET',
